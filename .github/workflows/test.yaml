@@ -1,5 +1,8 @@
 on: 
   workflow_call:
+  secrets:
+    GHCR_TOKEN:
+      required: true
 
 env:
   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -16,5 +19,5 @@ jobs:
           token: ${{ env.GITHUB_TOKEN }}
       - uses: bahmutov/npm-install@v1.7.7
       - name: semantic-release
-        run: npx semantic-releasei
+        run: npx semantic-release
 
