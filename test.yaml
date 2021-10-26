@@ -1,0 +1,10 @@
+on: 
+  workflow_call:
+
+jobs:
+  tag_job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.run_number }}
+      - run: echo ${{ github.repository }}
+
