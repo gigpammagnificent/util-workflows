@@ -23,4 +23,7 @@ jobs:
           sleep 8
           skaffold config set -g default-repo "localhost:5000"
       - run: make test
+        env:
+          GHCR_USER: innovationlabsmt
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
       - run: make build
