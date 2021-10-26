@@ -1,0 +1,26 @@
+on: 
+  workflow_call:
+    secrets:
+      GHCR_TOKEN:
+        required: true
+
+env:
+  GHCR_USER: innovationlabsmt
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+
+jobs:
+  pr:
+    name: Build pull request
+    runs-on: ubuntu-latest
+    if: ${{ github.repository != 'GiGInnovationLabs/endeavour-dotnet-template' }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volesen/setup-skaffold@v1.1
+        with:
+          version: 'v1.33.0'
+      - run: |
+          docker run -p 5000:5000 -d registry:2
+          sleep 8
+          skaffold config set -g default-repo "localhost:5000"
+      - run: make test
+      - run: make build
