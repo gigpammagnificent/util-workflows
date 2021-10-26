@@ -1,5 +1,3 @@
-name: Publish
-
 on: 
   workflow_call:
     secrets:
@@ -25,15 +23,14 @@ jobs:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - uses: volesen/setup-skaffold@v1.1
-        with:
-          version: 'v1.28.0'
-      - run: make test
       - run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
+      - uses: volesen/setup-skaffold@v1.1
+        with:
+          version: 'v1.33.0'
+      - run: make test
+      - run: |
           ./publish.sh ${{ steps.theVersion.outputs.theVersion }}
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
