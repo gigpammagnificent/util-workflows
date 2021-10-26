@@ -8,8 +8,6 @@ on:
 
 env:
   HELM_EXPERIMENTAL_OCI: 1
-  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
 jobs:
   publish_artifact:
@@ -28,11 +26,11 @@ jobs:
         with:
           version: 'v1.28.0'
       - run: make test
-#       - name: publish artifacts
-#         run: |
-#           helm registry login ${REGISTRY} -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-#           ./publish.sh ${{ steps.theVersion.outputs.theVersion }}
-#       - name: rm pre-rel
-#         run: |
-#           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
-#           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
+      - run: |
+          helm registry login ghcr.io -u innovationlabsmt -p ${{ secrets.GHCR_TOKEN }}
+          ./publish.sh ${{ steps.theVersion.outputs.theVersion }}
+      - run: |
+          REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
+          gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
