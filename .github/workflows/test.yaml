@@ -1,8 +1,8 @@
 on: 
   workflow_call:
-  secrets:
-    GHCR_TOKEN:
-      required: true
+    secrets:
+      GHCR_TOKEN:
+        required: true
 
 env:
   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
