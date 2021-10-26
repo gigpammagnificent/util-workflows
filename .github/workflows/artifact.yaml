@@ -8,6 +8,9 @@ on:
 
 env:
   HELM_EXPERIMENTAL_OCI: 1
+  GHCR_USER: innovationlabsmt
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
 jobs:
   publish_artifact:
@@ -20,17 +23,17 @@ jobs:
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: innovationlabsmt
+          username: ${{ env.GHCR_USER }}
           password: ${{ secrets.GHCR_TOKEN }}
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.28.0'
       - run: make test
       - run: |
-          helm registry login ghcr.io -u innovationlabsmt -p ${{ secrets.GHCR_TOKEN }}
+          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
           ./publish.sh ${{ steps.theVersion.outputs.theVersion }}
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
