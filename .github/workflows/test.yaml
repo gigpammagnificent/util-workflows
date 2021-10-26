@@ -1,10 +1,20 @@
 on: 
   workflow_call:
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
+
 jobs:
-  tag_job:
+  create_tag_job:
+    name: Create release tag
     runs-on: ubuntu-latest
+    if: ${{ github.run_number > 1 && !contains(github.repository, 'template') }}
     steps:
-      - run: echo ${{ github.run_number }}
-      - run: echo ${{ github.repository }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ env.GITHUB_TOKEN }}
+      - uses: bahmutov/npm-install@v1.7.7
+      - name: semantic-release
+        run: npx semantic-releasei
 
