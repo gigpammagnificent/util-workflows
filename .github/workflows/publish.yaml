@@ -34,8 +34,7 @@ jobs:
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
-      - name: Trigger Custom Workflow
-        uses: benc-uk/workflow-dispatch@v1
+      - uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Update
           repo: GiGInnovationLabs/orch-eks-dev
