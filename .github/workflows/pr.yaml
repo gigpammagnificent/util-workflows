@@ -18,10 +18,10 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GHCR_TOKEN }}
-      - run: echo ${{ toJson(github) }}
+      # - run: echo ${{ toJson(github) }}
       - uses: bahmutov/npm-install@v1.7.7
       - run: |
-          npx semantic-release --debug -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b ${{ github.ref_name }}
+          npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b ${{ github.head_ref }}
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
