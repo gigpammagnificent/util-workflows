@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GHCR_TOKEN }}
-      - uses: bahmutov/npm-install@v1.7.10
+      - uses: bahmutov/npm-install@v1.7.7
       - run: |
          npx semantic-release -p semantic-release-commitlint \ 
             -p @semantic-release/commit-analyzer \
