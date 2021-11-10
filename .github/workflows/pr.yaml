@@ -15,20 +15,20 @@ jobs:
     if: ${{ github.repository != 'GiGInnovationLabs/endeavour-dotnet-template' }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GHCR_TOKEN }}
-          ref: ${{ github.head_ref }}
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |
-          git branch -vv
-          echo "$GITHUB_CONTEXT"
-      - uses: bahmutov/npm-install@v1.7.7
-      - run: |
-          git reset --hard ${{ github.head_ref }}
-          npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b pull/25
+        # with:
+        #   fetch-depth: 0
+        #   token: ${{ secrets.GHCR_TOKEN }}
+        #   ref: ${{ github.head_ref }}
+      # - name: Dump GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |
+      #     git branch -vv
+      #     echo "$GITHUB_CONTEXT"
+      # - uses: bahmutov/npm-install@v1.7.7
+      # - run: |
+      #     git reset --hard ${{ github.head_ref }}
+      #     npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b pull/25
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
