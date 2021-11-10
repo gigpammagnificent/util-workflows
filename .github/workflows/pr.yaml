@@ -28,7 +28,7 @@ jobs:
       - uses: bahmutov/npm-install@v1.7.7
       - run: |
           git reset --hard ${{ github.head_ref }}
-          npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b pull/25 -b pull/25/merge
+          npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b pull/25/merge
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
