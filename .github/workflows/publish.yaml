@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ env.GHCR_TOKEN }}
       - id: theVersion
         run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
       - run: |
@@ -29,7 +31,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ env.GHCR_TOKEN }}
       - run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: volesen/setup-skaffold@v1.1

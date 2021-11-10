@@ -4,9 +4,6 @@ on:
       GHCR_TOKEN:
         required: true
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
-
 jobs:
   create_tag:
     name: Create release tag
@@ -19,4 +16,6 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - uses: bahmutov/npm-install@v1.7.7
       - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
