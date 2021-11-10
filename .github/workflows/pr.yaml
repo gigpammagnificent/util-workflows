@@ -27,6 +27,7 @@ jobs:
           echo "$GITHUB_CONTEXT"
       - uses: bahmutov/npm-install@v1.7.7
       - run: |
+          git reset --hard ${{ github.head_ref }}
           npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b ${{ github.head_ref }}
       - uses: volesen/setup-skaffold@v1.1
         with:
