@@ -21,7 +21,9 @@ jobs:
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: echo "$GITHUB_CONTEXT"
+        run: |
+          git branch -vv
+          echo "$GITHUB_CONTEXT"
       - uses: bahmutov/npm-install@v1.7.7
       - run: |
           npx semantic-release --debug --no-ci -p semantic-release-commitlint -p @semantic-release/commit-analyzer -b ${{ github.ref }}
