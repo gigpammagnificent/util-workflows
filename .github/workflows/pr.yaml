@@ -26,7 +26,6 @@ jobs:
           make synctpl
           if [ -n "$(git status --porcelain)" ]; then
             git diff HEAD
-            git diff
             echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
             exit 1
           fi
