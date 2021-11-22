@@ -7,32 +7,73 @@ on:
 env:
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  HELM_EXPERIMENTAL_OCI: 1
 
 jobs:
   pr:
     name: Build pull request
     runs-on: ubuntu-latest
     if: ${{ github.repository != 'GiGInnovationLabs/endeavour-dotnet-template' }}
-    services:
-      registry:
-        image: registry:2
-        ports: 
-          - 5000:5000
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout microservice repository
+        uses: actions/checkout@v2
         with:
           token: ${{ secrets.GHCR_TOKEN }}
-      - run: |
+      - name: Ensure synchronized with dotnet template
+        run: |
           make synctpl
           if [ -n "$(git status --porcelain)" ]; then
             git diff HEAD
             echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
             exit 1
           fi
-      - uses: volesen/setup-skaffold@v1.1
+      - name: Set up Skaffold
+        uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
-      - run: |
-          skaffold config set -g default-repo "localhost:5000"
-      - run: |
-          make test build
+      - name: Checkout devops repository to access common resources
+        uses: actions/checkout@v2
+        with:
+          path: ./devops
+          token: ${{ secrets.GHCR_TOKEN }}
+          repository: GiGInnovationLabs/devops
+          ref: feat/add-external-services
+      - name: Start Kubernetes cluster
+        uses: AbsaOSS/k3d-action@v2.0.0
+        with:
+          cluster-name: "k3d"
+          use-default-registry: false
+          args: >-
+            --config ./devops/k3d/k3d.yaml
+      - name: Create local Docker Registry
+        run: |
+          k3d registry create localhost --port 5000
+          docker network connect k3d-k3d k3d-localhost
+          skaffold config set -g default-repo localhost:5000
+      - name: Build microservice and publish Docker Image
+        run: |
+          make build
+      - name: Start external services
+        run: |
+          docker-compose -f ./devops/docker-compose/docker-compose.kafka.yaml -f ./devops/docker-compose/docker-compose.postgres.yaml up -d
+      - name: Update Helm chart dependencies
+        run: |
+          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
+          helm dep up
+      - name: Run database migrations
+        run: |
+          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
+          make pgsql
+      - name: Set up Helmfile
+        uses: mamezou-tech/setup-helmfile@v0.9.0
+      - name: Deploy common resources using Helmfile
+        run: |
+          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d deps
+          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d -l namespace=default sync --skip-deps
+      - name: Deploy microservice on k3d and run
+        run: |
+          make start
+      - name: Run pre-deployment tests
+        run: |
+          sudo echo "127.0.0.1       host.k3d.internal" | sudo tee -a /etc/hosts
+          make test
