@@ -37,7 +37,6 @@ jobs:
           path: ./util-workflows
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/util-workflows
-          ref: feat/adding-k3d-deployment
       - name: Start Kubernetes cluster
         uses: AbsaOSS/k3d-action@v2.0.0
         with:
