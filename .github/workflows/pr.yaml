@@ -50,9 +50,10 @@ jobs:
           k3d registry create localhost --port 5000
           docker network connect k3d-k3d k3d-localhost
           skaffold config set -g default-repo localhost:5000
-      - name: Build microservice and publish Docker Image
+      - name: Test, build and publish Docker Image of the microservice
         run: |
-          make build
+          sudo echo "127.0.0.1       host.k3d.internal" | sudo tee -a /etc/hosts
+          make test build
       - name: Start external services
         run: |
           docker-compose -f ./devops/docker-compose/docker-compose.kafka.yaml -f ./devops/docker-compose/docker-compose.postgres.yaml up -d
@@ -73,7 +74,3 @@ jobs:
       - name: Deploy microservice on k3d and run
         run: |
           make start
-      - name: Run pre-deployment tests
-        run: |
-          sudo echo "127.0.0.1       host.k3d.internal" | sudo tee -a /etc/hosts
-          make test
