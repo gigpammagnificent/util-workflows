@@ -72,10 +72,13 @@ jobs:
           repository: GiGInnovationLabs/devops
       - name: Set up Helmfile
         uses: mamezou-tech/setup-helmfile@v0.9.0
+        with:
+          helmfile-version: "v0.143.0"
+          install-kubectl: no
+          install-helm: no
       - name: Deploy common resources using Helmfile
         run: |
-          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d deps
-          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d -l namespace=default sync --skip-deps
+          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d -l namespace=default sync
       - name: Deploy microservice on k3d and run
         run: |
           make start
