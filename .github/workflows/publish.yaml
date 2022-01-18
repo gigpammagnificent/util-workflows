@@ -22,7 +22,6 @@ jobs:
         run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
       - run: |
           make test
-          find src/ -name ${SERVICE}.openapi.json | xargs -r gh release upload ${VERSION} --clobber
         if: "!contains(github.event.head_commit.message, '[skip test]')"
         env:
           VERSION: ${{ steps.theVersion.outputs.theVersion }}
