@@ -7,7 +7,6 @@ on:
 env:
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-  HELM_EXPERIMENTAL_OCI: 1
 
 jobs:
   pr:
@@ -27,8 +26,13 @@ jobs:
             echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
             exit 1
           fi
-      - name: Set up Skaffold
-        uses: volesen/setup-skaffold@v1.1
+      - name: Test
+        run: |
+          make test
+      - uses: azure/setup-helm@v1
+        with:
+          version: '3.8.0'
+      - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
       - name: Checkout util-workflows repository to access common resources
@@ -52,7 +56,7 @@ jobs:
       - name: Test, build and publish Docker Image of the microservice
         run: |
           sudo echo "127.0.0.1       host.k3d.internal" | sudo tee -a /etc/hosts
-          make test build
+          make build
       - name: Start external services
         run: |
           docker-compose -f ./util-workflows/docker-compose/docker-compose.kafka.yaml -f ./util-workflows/docker-compose/docker-compose.postgres.yaml up -d
