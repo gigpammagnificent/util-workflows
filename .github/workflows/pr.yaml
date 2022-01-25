@@ -29,9 +29,9 @@ jobs:
       - name: Test
         run: |
           make test
-      - uses: azure/setup-helm@v1
-        with:
-          version: '3.8.0'
+      # - uses: azure/setup-helm@v1
+      #   with:
+      #     version: '3.8.0'
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
