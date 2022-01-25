@@ -5,7 +5,6 @@ on:
         required: true
 
 env:
-  HELM_EXPERIMENTAL_OCI: 1
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -31,6 +30,9 @@ jobs:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
           password: ${{ env.GHCR_TOKEN }}
+      - uses: azure/setup-helm@v1
+        with:
+          version: '3.8.0'
       - run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: volesen/setup-skaffold@v1.1
