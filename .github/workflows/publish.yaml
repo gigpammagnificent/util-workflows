@@ -8,7 +8,7 @@ env:
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
-  HELM_EXPERIMENTAL_OCI: 1
+
 jobs:
   publish_artifact:
     name: Publish release artifacts
