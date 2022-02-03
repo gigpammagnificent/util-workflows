@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.repository != 'GiGInnovationLabs/endeavour-dotnet-template' }}
     steps:
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
       - name: Checkout microservice repository
         uses: actions/checkout@v2
         with:
