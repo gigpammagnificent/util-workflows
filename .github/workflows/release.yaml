@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.run_number > 1 && !contains(github.repository, 'template') }}
     steps:
+      - run: |
+          dotnet --version
+          dotnet --list-sdks
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
