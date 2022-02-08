@@ -7,6 +7,8 @@ on:
 env:
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  REPO_DEVOPS_BRANCH: main
+  REPO_WORKFLOWS_BRANCH: main
 
 jobs:
   pr:
@@ -17,14 +19,13 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-      - name: Checkout microservice repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           token: ${{ secrets.GHCR_TOKEN }}
-      - name: Ensure synchronized with dotnet template
+      - name: Ensure sync with upstream
         run: |
           make synctpl
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ -n "$(git status --porcelain | grep -v 'pr.yaml')" ]; then
             git diff HEAD
             echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
             exit 1
@@ -32,60 +33,53 @@ jobs:
       - name: Test
         run: |
           make test
-      - uses: azure/setup-helm@v1
-        with:
-          version: '3.8.0'
-      - uses: volesen/setup-skaffold@v1.1
-        with:
-          version: 'v1.33.0'
-      - name: Checkout util-workflows repository to access common resources
-        uses: actions/checkout@v2
+
+      - uses: actions/checkout@v2
         with:
           path: ./util-workflows
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/util-workflows
-      - name: Start Kubernetes cluster
-        uses: AbsaOSS/k3d-action@v2.0.0
+          ref: ${{ env.REPO_WORKFLOWS_BRANCH }}
+      - name: Deploy external services
+        run: |
+          docker-compose up -d
+        working-directory: ./util-workflows/k3d
+
+      - uses: volesen/setup-skaffold@v1.1
         with:
-          cluster-name: "k3d"
-          use-default-registry: false
-          args: >-
-            --config ./util-workflows/k3d/k3d.yaml
-      - name: Create local Docker Registry
+          version: 'v1.33.0'
+      - uses: rinx/setup-k3d@v0.0.4
+        with:
+          skipClusterCreation: true
+      - name: Start k3d cluster
+        working-directory: ./util-workflows/k3d
         run: |
-          k3d registry create localhost --port 5000
-          docker network connect k3d-k3d k3d-localhost
-          skaffold config set -g default-repo localhost:5000
-      - name: Test, build and publish Docker Image of the microservice
-        run: |
-          sudo echo "127.0.0.1       host.k3d.internal" | sudo tee -a /etc/hosts
-          make build
-      - name: Start external services
-        run: |
-          docker-compose -f ./util-workflows/docker-compose/docker-compose.kafka.yaml -f ./util-workflows/docker-compose/docker-compose.postgres.yaml up -d
-      - name: Update Helm chart dependencies
-        run: |
-          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-          helm dep up
-      - name: Run database migrations
-        run: |
-          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-          make pgsql
-      - name: Checkout devops repository to access Helmfile manifests
-        uses: actions/checkout@v2
+          k3d cluster create --config k3d.yaml
+          skaffold config set default-repo localhost:5000
+
+      - uses: actions/checkout@v2
         with:
           path: ./devops
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
-      - name: Set up Helmfile
-        uses: mamezou-tech/setup-helmfile@v0.9.0
+          ref: ${{ env.REPO_DEVOPS_BRANCH }}
+      - uses: azure/setup-helm@v1
+        with:
+          version: '3.8.0'
+      - uses: mamezou-tech/setup-helmfile@v0.9.0
         with:
           helmfile-version: "v0.143.0"
           install-kubectl: no
           install-helm: no
-      - name: Deploy common resources using Helmfile
+      - name: Deploy in-cluster services
         run: |
-          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d -l namespace=default sync
-      - name: Deploy microservice on k3d and run
+          helmfile -f ./devops/helmfile/helmfile.yaml -e k3d -l namespace=default -l namespace=apicurio sync
+
+      - uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      - name: Deploy microservice
         run: |
-          make start
+          make pgsql kafka start

@@ -1,19 +1,23 @@
-apiVersion: k3d.io/v1alpha2
+apiVersion: k3d.io/v1alpha4
 kind: Simple
-name: k3d
-image: rancher/k3s:v1.22.2-k3s1
+metadata:
+  name: k3d
+servers: 1
+agents: 0
 registries:
-  create: false
+  create:
+    name: k3d-registry
+    host: "0.0.0.0"
+    hostPort: "5000"
   config: |
     mirrors:
       "localhost:5000":
         endpoint:
-          - http://k3d-localhost:5000
+          - http://k3d-registry:5000
 options:
   k3d:
-    wait: true
     disableLoadbalancer: true
-    disableHostIPInjection: false
   k3s:
-    extraServerArgs:
-      - "--disable=metrics-server,servicelb,traefik"
+    extraArgs:
+      - arg: "--disable=servicelb,traefik,local-storage,metrics-server"
+        nodeFilters: ["all"]

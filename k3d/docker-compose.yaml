@@ -16,3 +16,16 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: IN
       KAFKA_ZOOKEEPER_CONNECT: "zk:2181"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  db:
+    image: postgres:13-alpine
+    restart: on-failure
+    ports: ["5432:5432"]
+    command: ["-c", "wal_level=logical", "-c", "max_wal_senders=5"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+networks:
+  default:
+    name: endeavour-ext
