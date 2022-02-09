@@ -21,6 +21,12 @@ jobs:
           dotnet-version: '5.0.x'
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 0
+          token: ${{ secrets.GHCR_TOKEN }}
+
+      - uses: wagoid/commitlint-github-action@v4
+        with:
+          configFile: .commitlintrc.yml
           token: ${{ secrets.GHCR_TOKEN }}
       - name: Ensure sync with upstream
         run: |
@@ -30,6 +36,7 @@ jobs:
             echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
             exit 1
           fi
+
       - name: Test
         run: |
           make test
