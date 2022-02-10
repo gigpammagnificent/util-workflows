@@ -102,5 +102,6 @@ jobs:
           done
 
       - name: Deploy microservice
+        run: |
           make pgsql start
 
