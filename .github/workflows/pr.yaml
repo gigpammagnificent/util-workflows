@@ -87,7 +87,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Deploy microservice
+      - name: Prepare kafka
         run: |
-          make pgsql kafka start
+          for AVRO in `find src/ -name '*.avsc' | grep -v bin`; do
+            TOPIC=$(basename $AVRO | sed 's/\.avsc$//g')
+
+            docker run -e BROKERS=host.k3d.internal:9092 --add-host=host.k3d.internal:host-gateway \
+              deviceinsight/kafkactl:latest create topic $TOPIC || true
+
+            kubectl exec deploy/apcrg-apicurio-registry -n apicurio -- \
+              curl -Ss -XPOST -H "Content-Type:application/json" \
+                -d '{"schema":"{\"type\":\"record\",\"name\":\"'${TOPIC}'\",\"fields\":[]}","schemaType":"AVRO"}' \
+                localhost:8080/apis/ccompat/v6/subjects/${TOPIC}-value/versions
+          done
+
+      - name: Deploy microservice
+          make pgsql start
 
