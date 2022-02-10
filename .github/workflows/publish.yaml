@@ -19,6 +19,7 @@ jobs:
           dotnet-version: '5.0.x'
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 2
           token: ${{ env.GHCR_TOKEN }}
       - id: theVersion
         run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
@@ -53,8 +54,13 @@ jobs:
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
+
+      - uses: mstachniuk/ci-skip@v1
+        id: skipDeploy
+        with:
+          commit-filter: '[skip deploy]'
       - uses: benc-uk/workflow-dispatch@v1
-        if: "!contains(github.event.head_commit.message, '[skip deploy]')"
+        if: ${{ steps.skipDeploy.outputs.ci-skip == 'false' }}
         with:
           workflow: Update
           repo: GiGInnovationLabs/orch-eks-dev
