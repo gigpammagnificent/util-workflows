@@ -23,13 +23,10 @@ jobs:
           token: ${{ env.GHCR_TOKEN }}
       - id: theVersion
         run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
-      # - run: |
-      #     make test
-      #   if: "!contains(github.event.head_commit.message, '[skip test]')"
-      #   env:
-      #     VERSION: ${{ steps.theVersion.outputs.theVersion }}
-      #     SERVICE: ${{ github.event.repository.name }}
-      - uses: docker/login-action@v1
+      - name: Test
+        run: |
+          make test
+     - uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
