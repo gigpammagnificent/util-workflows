@@ -91,6 +91,12 @@ jobs:
           rm -f helmfile.lock
 
           helmfile -f helmfile.yaml -e k3d -l name=default-support -l name=apcrg sync --skip-deps
+      # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53 
+      # - name: Deploy KSQLDB / Kafka Connect
+      #   working-directory: ./devops/helmfile
+      #   run: |
+      #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-operator sync --skip-deps
+      #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-support -l name=ksqldb sync --skip-deps
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -109,12 +115,6 @@ jobs:
                 -d '{"schema":"{\"type\":\"record\",\"name\":\"'${TOPIC}'\",\"fields\":[]}","schemaType":"AVRO"}' \
                 localhost:8080/apis/ccompat/v6/subjects/${TOPIC}-value/versions
           done
-
-      - name: Deploy Kafka Namespace
-        working-directory: ./devops/helmfile
-        run: |
-          helmfile -f helmfile.yaml -e k3d -l name=strimzi-operator sync --skip-deps
-          helmfile -f helmfile.yaml -e k3d -l name=strimzi-support -l name=ksqldb sync --skip-deps
 
       - name: Deploy microservice
         run: |
