@@ -119,3 +119,14 @@ jobs:
       - name: Deploy microservice
         run: |
           make pgsql start
+
+      - name: Failure Pod Logging
+        if: ${{ failure() }}
+        run: |
+          for namespace in $(kubectl get namespaces --no-headers -o custom-columns=":metadata.name")
+          do
+            echo "Namespace: ${namespace} Logs:"
+            kubectl logs -l cicd-pod-logging=enabled -n "${namespace}" --tail=1000
+            echo "------------------------------------------------------------------------------------------------------------------"
+            echo ""
+          done
