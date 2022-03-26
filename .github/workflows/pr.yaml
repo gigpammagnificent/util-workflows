@@ -43,7 +43,7 @@ jobs:
       - name: Test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
-          make test
+          make test-comp
 
       - uses: actions/checkout@v2
         with:
