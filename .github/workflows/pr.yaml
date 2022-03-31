@@ -24,12 +24,13 @@ jobs:
         with:
           configFile: .commitlintrc.yml
           token: ${{ secrets.GHCR_TOKEN }}
+      - uses: extractions/setup-just@v1
       - name: Ensure sync with upstream
         run: |
-          make synctpl
+          just synctpl
           if [ -n "$(git status --porcelain | grep -v 'pr.yaml')" ]; then
             git diff HEAD
-            echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use make synctpl to fix."
+            echo "::error title=synctpl::Microservice is not up to date with endeavour-dotnet-template, use just synctpl to fix."
             exit 1
           fi
 
@@ -43,7 +44,7 @@ jobs:
       - name: Test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
-          make test
+          just test
 
       - uses: actions/checkout@v2
         with:
@@ -118,7 +119,7 @@ jobs:
 
       - name: Deploy microservice
         run: |
-          make pgsql start
+          just pgsql start
 
       - name: Failure Pod Logging
         if: ${{ failure() }}
