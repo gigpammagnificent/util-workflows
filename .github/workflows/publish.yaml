@@ -24,9 +24,6 @@ jobs:
       - uses: extractions/setup-just@v1
       - id: theVersion
         run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
-      - name: Test
-        run: |
-          just test
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
