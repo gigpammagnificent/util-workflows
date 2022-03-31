@@ -27,6 +27,11 @@ jobs:
       - uses: extractions/setup-just@v1
       - name: Ensure sync with upstream
         run: |
+          if [ ! -f justfile ]; then
+            echo "::error title=synctpl::Manually copy justfile from endeavour-dotnet-template."
+            exit 1
+          fi
+
           just synctpl
           if [ -n "$(git status --porcelain | grep -v 'pr.yaml')" ]; then
             git diff HEAD
