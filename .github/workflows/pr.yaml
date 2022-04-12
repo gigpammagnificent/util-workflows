@@ -126,13 +126,14 @@ jobs:
         run: |
           just pgsql start
 
-      - name: Failure Pod Logging
+      - name: Failure logs
         if: ${{ failure() }}
         run: |
-          for namespace in $(kubectl get namespaces --no-headers -o custom-columns=":metadata.name")
-          do
-            echo "Namespace: ${namespace} Logs:"
-            kubectl logs -l cicd-pod-logging=enabled -n "${namespace}" --tail=1000
+          CHART=$(basename `pwd`)
+          for NS in $(kubectl get ns --no-headers -o custom-columns=:metadata.name); do
+            echo "Namespace: ${NS}"
+            echo "------------------------------------------------------------------------------------------------------------------"
+            kubectl logs -l app.kubernetes.io/name=${CHART} -n ${NS} --tail=-1
             echo "------------------------------------------------------------------------------------------------------------------"
             echo ""
           done
