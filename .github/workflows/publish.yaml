@@ -43,6 +43,7 @@ jobs:
           VERSION: ${{ steps.theVersion.outputs.theVersion }}
       # TODO create just receipe    
       - run: |
+          dotnet build
           helm dep up
           helm package --version ${VERSION} --app-version ${VERSION} .
           helm push ${{ github.event.repository.name }}-${VERSION}.tgz oci://ghcr.io/giginnovationlabs/helm
