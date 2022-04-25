@@ -41,9 +41,9 @@ jobs:
       - run: skaffold build -t ${VERSION}
         env:
           VERSION: ${{ steps.theVersion.outputs.theVersion }}
-      # TODO create just receipe    
+      # TODO create just receipe for helm package 
       - run: |
-          dotnet build
+          just openapi
           helm dep up
           helm package --version ${VERSION} --app-version ${VERSION} .
           helm push ${{ github.event.repository.name }}-${VERSION}.tgz oci://ghcr.io/giginnovationlabs/helm
