@@ -39,18 +39,6 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-      - uses: mstachniuk/ci-skip@v1
-        id: skipTest
-        with:
-          commit-filter: '[skip test]'
-      - name: Test
-        if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
-        run: |
-          just test
-
       - uses: actions/checkout@v2
         with:
           path: ./util-workflows
@@ -61,6 +49,18 @@ jobs:
         run: |
           docker-compose up -d
         working-directory: ./util-workflows/k3d
+
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - uses: mstachniuk/ci-skip@v1
+        id: skipTest
+        with:
+          commit-filter: '[skip test]'
+      - name: Test
+        if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
+        run: |
+          just pgsql test
 
       - uses: volesen/setup-skaffold@v1.1
         with:
