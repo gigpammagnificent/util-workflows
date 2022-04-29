@@ -47,6 +47,7 @@ jobs:
           ref: ${{ env.REPO_WORKFLOWS_BRANCH }}
       - name: Deploy external services
         run: |
+          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
           docker-compose up -d
         working-directory: ./util-workflows/k3d
 
@@ -91,8 +92,6 @@ jobs:
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
-          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-
           helmfile -e k3d deps
           rm -f helmfile.lock
 
