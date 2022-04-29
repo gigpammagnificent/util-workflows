@@ -45,6 +45,11 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/util-workflows
           ref: ${{ env.REPO_WORKFLOWS_BRANCH }}
+      - uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
       - name: Deploy external services
         run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
@@ -102,11 +107,6 @@ jobs:
       #   run: |
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-operator sync --skip-deps
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-support -l name=ksqldb sync --skip-deps
-      - uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
       - name: Prepare kafka
         run: |
           for AVRO in `find src/ -name '*.avsc' | grep -v bin`; do
