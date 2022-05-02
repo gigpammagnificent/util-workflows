@@ -116,7 +116,8 @@ jobs:
 
       - name: Deploy microservice
         run: |
-          just pgsql up
+          just pgsql
+          just up
 
       - name: Failure logs
         if: ${{ failure() }}
