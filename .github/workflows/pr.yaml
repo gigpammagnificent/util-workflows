@@ -92,9 +92,7 @@ jobs:
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
-          helmfile -e k3d deps
-          rm -f helmfile.lock
-
+          just deps
           helmfile -f helmfile.yaml -e k3d -l name=default-support -l name=apcrg sync --skip-deps
       # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53 
       # - name: Deploy KSQLDB / Kafka Connect
