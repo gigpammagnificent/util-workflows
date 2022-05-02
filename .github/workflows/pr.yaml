@@ -58,7 +58,7 @@ jobs:
       - name: Test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
-          just pgsql only-ddl 
+          just pgsql-ddl 
           just test
       - uses: volesen/setup-skaffold@v1.1
         with:
