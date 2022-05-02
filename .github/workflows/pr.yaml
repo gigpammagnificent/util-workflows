@@ -45,12 +45,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Deploy external services
+      - name: helm login
         run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-          docker-compose up -d
-        working-directory: ./util-workflows/k3d
-
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
@@ -61,13 +58,15 @@ jobs:
       - name: Test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
-          # TODO migrate to only-ddl target
-          just pgsql
+          just pgsql only-ddl 
           just test
-
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.33.0'
+      - name: Deploy external services
+        run: |
+          docker-compose up -d
+        working-directory: ./util-workflows/k3d
       - uses: rinx/setup-k3d@v0.0.4
         with:
           skipClusterCreation: true
@@ -76,7 +75,6 @@ jobs:
         run: |
           k3d cluster create --config k3d.yaml
           skaffold config set default-repo localhost:5000
-
       - uses: actions/checkout@v2
         with:
           path: ./devops
