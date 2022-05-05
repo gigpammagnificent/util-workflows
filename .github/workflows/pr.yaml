@@ -55,7 +55,12 @@ jobs:
         id: skipTest
         with:
           commit-filter: '[skip test]'
-      - name: Test
+      - name: setup opa
+        if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
+        uses: open-policy-agent/setup-opa@v1
+        with:
+          version: latest
+      - name: test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
           just pgsql-ddl 
