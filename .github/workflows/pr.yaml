@@ -14,7 +14,7 @@ jobs:
   pr:
     name: Build pull request
     runs-on: ubuntu-latest
-    if: ${{ github.repository != 'GiGInnovationLabs/endeavour-dotnet-template' }}
+    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-dotnet-template') }}
     steps:
       - uses: actions/checkout@v2
         with:
