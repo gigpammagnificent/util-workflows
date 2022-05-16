@@ -91,7 +91,8 @@ jobs:
         working-directory: ./devops/helmfile
         run: |
           just k3d
-          helmfile -f helmfile.yaml -e k3d -l name=default-support -l name=apcrg sync --skip-deps
+          just rup default-support
+          just rup apcrg
       # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53
       # - name: Deploy KSQLDB / Kafka Connect
       #   working-directory: ./devops/helmfile
