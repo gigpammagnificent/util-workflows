@@ -1,4 +1,4 @@
-on: 
+on:
   workflow_call:
     secrets:
       GHCR_TOKEN:
@@ -47,6 +47,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: helm login
         run: |
+          helm version
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: actions/setup-dotnet@v1
         with:
@@ -63,23 +64,23 @@ jobs:
       - name: test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
-          just pgsql-ddl 
+          just pgsql-ddl
           just test
-      - uses: volesen/setup-skaffold@v1.1
-        with:
-          version: 'v1.33.0'
       - name: Deploy external services
         run: |
           docker-compose up -d
         working-directory: ./util-workflows/k3d
+      - uses: volesen/setup-skaffold@v1.1
+        with:
+          version: v1.38.0
       - uses: rinx/setup-k3d@v0.0.4
         with:
           skipClusterCreation: true
-      - name: Start k3d cluster
-        working-directory: ./util-workflows/k3d
-        run: |
-          k3d cluster create --config k3d.yaml
-          skaffold config set default-repo localhost:5000
+      - uses: mamezou-tech/setup-helmfile@v0.9.0
+        with:
+          helmfile-version: "v0.143.0"
+          install-kubectl: no
+          install-helm: no
       - uses: actions/checkout@v2
         with:
           path: ./devops
@@ -89,17 +90,13 @@ jobs:
       - uses: azure/setup-helm@v1
         with:
           version: '3.8.0'
-      - uses: mamezou-tech/setup-helmfile@v0.9.0
-        with:
-          helmfile-version: "v0.143.0"
-          install-kubectl: no
-          install-helm: no
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
-          just deps
-          helmfile -f helmfile.yaml -e k3d -l name=default-support -l name=apcrg sync --skip-deps
-      # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53 
+          just k3d
+          just rup default-support
+          just rup apcrg
+      # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53
       # - name: Deploy KSQLDB / Kafka Connect
       #   working-directory: ./devops/helmfile
       #   run: |
