@@ -47,7 +47,6 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: helm login
         run: |
-          helm version
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: actions/setup-dotnet@v1
         with:
@@ -66,6 +65,7 @@ jobs:
         run: |
           just pgsql-ddl
           just test
+
       - name: Deploy external services
         run: |
           docker-compose up -d
@@ -87,15 +87,11 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
-      - uses: azure/setup-helm@v1
-        with:
-          version: '3.8.0'
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
           just k3d
-          just rup default-support
-          just rup apcrg
+          helmfile -f helmfile.yaml -e k3d -l name=default-support -l name=apcrg sync --skip-deps
       # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53
       # - name: Deploy KSQLDB / Kafka Connect
       #   working-directory: ./devops/helmfile
