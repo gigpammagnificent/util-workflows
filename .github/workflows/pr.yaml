@@ -62,9 +62,7 @@ jobs:
           version: latest
       - name: test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
-        run: |
-          just pgsql-ddl
-          just test
+        run: just test
 
       - name: Deploy external services
         run: |
