@@ -34,12 +34,6 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/checkout@v2
-        with:
-          path: ./util-workflows
-          token: ${{ secrets.GHCR_TOKEN }}
-          repository: GiGInnovationLabs/util-workflows
-          ref: ${{ env.REPO_WORKFLOWS_BRANCH }}
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -64,10 +58,6 @@ jobs:
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: just test
 
-      - name: Deploy external services
-        run: |
-          docker-compose up -d
-        working-directory: ./util-workflows/k3d
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: v1.38.0
@@ -85,6 +75,10 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
+      - name: Deploy external services
+        working-directory: ./devops/k3d
+        run: |
+          docker-compose up -d
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
