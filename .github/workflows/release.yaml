@@ -1,4 +1,4 @@
-on: 
+on:
   workflow_call:
     secrets:
       GHCR_TOKEN:
@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GHCR_TOKEN }}
-      - uses: bahmutov/npm-install@v1.7.7
+      - uses: bahmutov/npm-install@v1
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
