@@ -54,15 +54,15 @@ jobs:
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
 
-      # - uses: mstachniuk/ci-skip@v1
-      #   id: skipDeploy
-      #   with:
-      #     commit-filter: '[skip deploy]'
-      # - uses: benc-uk/workflow-dispatch@v1
-      #   if: ${{ steps.skipDeploy.outputs.ci-skip == 'false' }}
-      #   with:
-      #     workflow: Update
-      #     repo: GiGInnovationLabs/orch-eks-dev
-      #     token: ${{ env.GHCR_TOKEN }}
-      #     ref: main
-      #     inputs: '{ "repository": "${{ github.event.repository.name }}", "version": "${{ steps.theVersion.outputs.theVersion }}" }'
+      - uses: mstachniuk/ci-skip@v1
+        id: skipDeploy
+        with:
+          commit-filter: '[skip deploy]'
+      - uses: benc-uk/workflow-dispatch@v1
+        if: ${{ steps.skipDeploy.outputs.ci-skip == 'false' }}
+        with:
+          workflow: Update
+          repo: GiGInnovationLabs/orch-eks-dev
+          token: ${{ env.GHCR_TOKEN }}
+          ref: main
+          inputs: '{ "repository": "${{ github.event.repository.name }}", "version": "${{ steps.theVersion.outputs.theVersion }}" }'
