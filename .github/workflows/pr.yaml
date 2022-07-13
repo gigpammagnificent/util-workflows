@@ -33,12 +33,14 @@ jobs:
             echo "::error title=synctpl::Microservice is not up to date with upstream, run just synctpl to fix."
             exit 1
           fi
-
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
+      - name: Ensure avro files are properly formatted
+        run: |
+          just check-avro-format
       - name: helm login
         run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
