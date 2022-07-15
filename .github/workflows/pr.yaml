@@ -74,7 +74,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
-      - name: Deploy in-cluster services
+      - name: Deploy 3rd party services
         working-directory: ./devops/helmfile
         run: |
           just compose k3d
