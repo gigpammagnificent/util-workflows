@@ -77,8 +77,7 @@ jobs:
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
-          just compose
-          just k3d
+          just compose k3d
           just rup default-support
           just rup apcrg
       # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53
@@ -102,9 +101,7 @@ jobs:
           done
 
       - name: Deploy microservice
-        run: |
-          just pgsql
-          just up
+        run: just up
 
       - name: Failure logs
         if: ${{ failure() }}
