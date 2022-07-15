@@ -74,13 +74,14 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
-      - name: Deploy external services
-        working-directory: ./devops/k3d
-        run: |
-          docker-compose up -d
+      # - name: Deploy external services
+      #   working-directory: ./devops/k3d
+      #   run: |
+      #     docker-compose up -d
       - name: Deploy in-cluster services
         working-directory: ./devops/helmfile
         run: |
+          just compose
           just k3d
           just rup default-support
           just rup apcrg
