@@ -47,8 +47,21 @@ jobs:
           version: latest
       - name: test
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
-        run: just test
-
+        run: |
+          just test
+      - id: hasTrx
+        if: success() || failure()
+        run: |
+          if [ "$(find /tmp/test-report -name '*.trx' 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "::set-output name=hasTrx::true"
+          fi
+      - name: test report dotnet
+        uses: dorny/test-reporter@v1
+        if: ${{ (success() || failure()) && steps.hasTrx.outputs.hasTrx == 'true' }}
+        with:
+          name: test report
+          path: /tmp/test-report/*.trx
+          reporter: dotnet-trx
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: v1.38.0
@@ -66,7 +79,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           repository: GiGInnovationLabs/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
-      - name: Deploy 3rd party services
+      - name: deploy infrastructure
         working-directory: ./devops/helmfile
         run: |
           just compose k3d
@@ -78,7 +91,7 @@ jobs:
       #   run: |
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-operator sync --skip-deps
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-support -l name=ksqldb sync --skip-deps
-      - name: Prepare kafka
+      - name: prepare kafka
         run: |
           for AVRO in `find src/ -name '*.avsc' | grep -v bin`; do
             TOPIC=$(basename $AVRO | sed 's/\.avsc$//g')
@@ -91,11 +104,9 @@ jobs:
                 -d '{"schema":"{\"type\":\"record\",\"name\":\"'${TOPIC}'\",\"fields\":[]}","schemaType":"AVRO"}' \
                 localhost:8080/apis/ccompat/v6/subjects/${TOPIC}-value/versions
           done
-
-      - name: Deploy microservice
+      - name: deploy microservice
         run: just up
-
-      - name: Failure logs
+      - name: failure logs
         if: ${{ failure() }}
         run: |
           CHART=$(basename `pwd`)
