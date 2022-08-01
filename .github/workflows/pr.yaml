@@ -49,19 +49,28 @@ jobs:
         if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
         run: |
           just test
-      - id: hasTrx
+      - id: hasTestReport
         if: success() || failure()
         run: |
           if [ "$(find /tmp/test-report -name '*.trx' 2>/dev/null | wc -l)" -gt 0 ]; then
             echo "::set-output name=hasTrx::true"
+          elif [ "$(find /tmp/test-report -name '*.xml' 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "::set-output name=hasJunit::true"
           fi
-      - name: test report dotnet
+      - name: test report trx
         uses: dorny/test-reporter@v1
-        if: ${{ (success() || failure()) && steps.hasTrx.outputs.hasTrx == 'true' }}
+        if: ${{ (success() || failure()) && steps.hasTestReport.outputs.hasTrx == 'true' }}
         with:
           name: test report
           path: /tmp/test-report/*.trx
           reporter: dotnet-trx
+      - name: test report junit
+        uses: dorny/test-reporter@v1
+        if: ${{ (success() || failure()) && steps.hasTestReport.outputs.hasJunit == 'true' }}
+        with:
+          name: test report
+          path: /tmp/test-report/*.xml
+          reporter: java-junit
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: v1.38.0
