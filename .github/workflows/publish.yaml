@@ -1,4 +1,4 @@
-on: 
+on:
   workflow_call:
     secrets:
       GHCR_TOKEN:
@@ -44,7 +44,7 @@ jobs:
       # TODO create just receipe for helm package
       - run: |
           just openapi
-          just publish ${{ steps.theVersion.outputs.theVersion }}
+          just publish ${VERSION}
           helm dep up
           helm package --version ${VERSION} --app-version ${VERSION} .
           helm push ${{ github.event.repository.name }}-${VERSION}.tgz oci://ghcr.io/giginnovationlabs/helm
