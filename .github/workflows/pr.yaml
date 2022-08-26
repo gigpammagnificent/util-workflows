@@ -109,8 +109,7 @@ jobs:
         working-directory: ./devops/helmfile
         run: |
           just compose k3d
-          just rup default-support
-          just rup apcrg
+          just _up-ci
       # TODO only run it conditionally for DWH, related to https://github.com/GiGInnovationLabs/endeavour-dwh/issues/53
       # - name: Deploy KSQLDB / Kafka Connect
       #   working-directory: ./devops/helmfile
