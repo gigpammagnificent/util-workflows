@@ -36,25 +36,26 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
-      - uses: mstachniuk/ci-skip@v1
-        id: skipTest
+      - id: skipTest
+        uses: Legorooj/skip-ci@main
         with:
-          commit-filter: '[skip test]'
+          pattern: '\[skip\stest\]'
+          token: ${{ env.GHCR_TOKEN }}
       - name: setup opa
-        if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
+        if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v1
         with:
           version: latest
       - name: test
-        if: ${{ steps.skipTest.outputs.ci-skip == 'false' }}
+        if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         run: just test
       - id: hasTestReport
-        if: success() || failure()
+        if: ${{ (success() || failure()) && steps.skipTest.outputs.canSkip != 'true' }}
         run: |
           if [ "$(find /tmp/test-report -name '*.trx' 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "::set-output name=hasTrx::true"
+            echo "hasTrx=true" >> $GITHUB_OUTPUT
           elif [ "$(find /tmp/test-report -name '*.xml' 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "::set-output name=hasJunit::true"
+            echo "hasJunit=true" >> $GITHUB_OUTPUT
           fi
       - name: test report trx
         uses: dorny/test-reporter@v1
