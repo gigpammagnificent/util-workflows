@@ -23,7 +23,7 @@ jobs:
           token: ${{ env.GHCR_TOKEN }}
       - uses: extractions/setup-just@v1
       - id: theVersion
-        run: echo "::set-output name=theVersion::$(echo ${GITHUB_REF##*/})"
+        run: echo "theVersion=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -54,12 +54,13 @@ jobs:
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ steps.theVersion.outputs.theVersion }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ steps.theVersion.outputs.theVersion }}
 
-      - uses: mstachniuk/ci-skip@v1
-        id: skipDeploy
+      - id: skipDeploy
+        uses: Legorooj/skip-ci@main
         with:
-          commit-filter: '[skip deploy]'
+          pattern: '\[skip\sdeploy\]'
+          token: ${{ env.GHCR_TOKEN }}
       - uses: benc-uk/workflow-dispatch@v1
-        if: ${{ steps.skipDeploy.outputs.ci-skip == 'false' }}
+        if: ${{ steps.skipDeploy.outputs.canSkip != 'true' }}
         with:
           workflow: Update
           repo: GiGInnovationLabs/orch-eks-dev
