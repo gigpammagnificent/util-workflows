@@ -136,6 +136,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           CHART=$(basename `pwd`)
+          kubectl describe po $CHART
           for NS in $(kubectl get ns --no-headers -o custom-columns=:metadata.name); do
             echo "Namespace: ${NS}"
             echo "------------------------------------------------------------------------------------------------------------------"
