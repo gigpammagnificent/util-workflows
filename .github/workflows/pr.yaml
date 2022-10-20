@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-dotnet-template') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GHCR_TOKEN }}
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-dotnet-template') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GHCR_TOKEN }}
       - uses: extractions/setup-just@v1
@@ -100,7 +100,7 @@ jobs:
           helmfile-version: "v0.146.0"
           install-kubectl: no
           install-helm: no
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: ./devops
           token: ${{ secrets.GHCR_TOKEN }}
@@ -117,19 +117,6 @@ jobs:
       #   run: |
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-operator sync --skip-deps
       #     helmfile -f helmfile.yaml -e k3d -l name=strimzi-support -l name=ksqldb sync --skip-deps
-      - name: prepare kafka
-        run: |
-          for AVRO in `find src/ -name '*.avsc' | grep -v bin`; do
-            TOPIC=$(basename $AVRO | sed 's/\.avsc$//g')
-
-            docker run -e BROKERS=host.k3d.internal:9092 --add-host=host.k3d.internal:host-gateway \
-              deviceinsight/kafkactl:latest create topic $TOPIC || true
-
-            kubectl exec deploy/apcrg-apicurio-registry -n apicurio -- \
-              curl -Ss -XPOST -H "Content-Type:application/json" \
-                -d '{"schema":"{\"type\":\"record\",\"name\":\"'${TOPIC}'\",\"fields\":[]}","schemaType":"AVRO"}' \
-                localhost:8080/apis/ccompat/v6/subjects/${TOPIC}-value/versions
-          done
       - name: deploy microservice
         run: just up
       - name: failure logs
@@ -137,6 +124,9 @@ jobs:
         run: |
           CHART=$(basename `pwd`)
           kubectl describe po $CHART
+          echo '------------------------------------------------------------'
+          kubectl get all -n apicurio
+          echo '------------------------------------------------------------'
           for NS in $(kubectl get ns --no-headers -o custom-columns=:metadata.name); do
             echo "Namespace: ${NS}"
             echo "------------------------------------------------------------------------------------------------------------------"
