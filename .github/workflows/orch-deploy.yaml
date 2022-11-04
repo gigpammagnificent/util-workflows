@@ -1,0 +1,78 @@
+on:
+  workflow_call:
+    inputs:
+      e2e:
+        default: true
+        required: true
+        type: boolean
+
+env:
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  AWS_REGION: eu-west-1
+  SLACK_WEBHOOK_URL: ${{ secrets.EKS_DEV_SLACK_WEBHOOK_URL }}
+
+jobs:
+  helmfile_job:
+    name: deploy services
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GHCR_TOKEN }}
+      - uses: extractions/setup-just@v1
+      - uses: open-policy-agent/setup-opa@v1
+        with:
+          version: latest
+      - run: just test
+      - uses: mamezou-tech/setup-helmfile@v1
+        with:
+          helmfile-version: 'v0.147.0'
+          install-kubectl: no
+          install-helm: no
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: login to eks
+        run: |
+          aws eks update-kubeconfig --name eks-dev
+      - name: disable error notifications
+        run: |
+          kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
+      - name: synchronize services
+        run: |
+          helmfile apply --concurrency 4
+      - name: check services
+        run: |
+          if [ ! -z "$(helm ls -a -o yaml -n endeavour | yq e '.[].status' - | grep -v '^deployed$')" ]; then
+            echo "::error title=status::Some charts not deployed !!!"
+            exit 1
+          fi
+          kubectl get ds,deploy -n endeavour -o name | xargs -r kubectl rollout status -n endeavour --timeout=3m
+          just health-opa
+      - name: enable error notifications
+        if: always()
+        run: |
+          kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
+      - name: start e2e tests
+        uses: benc-uk/workflow-dispatch@v1
+        if: ${{ inputs.e2e == true }}
+        with:
+          workflow: E2E test
+          repo: GiGInnovationLabs/endeavour-e2e
+          token: ${{ secrets.GHCR_TOKEN }}
+          ref: main
+          inputs: '{"environment": "eks-dev", "tenantId": "demo2"}'
+      - name: capture asset registry
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: AssetRegistry
+          token: ${{ secrets.GHCR_TOKEN }}
+          ref: main
+      - uses: act10ns/slack@v1
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          message: 'Deployment failed on eks-dev'
