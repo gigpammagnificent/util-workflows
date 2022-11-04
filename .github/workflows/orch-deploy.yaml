@@ -76,7 +76,7 @@ jobs:
       - name: capture asset registry
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: AssetRegistry
+          workflow: Asset registry
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
       - uses: act10ns/slack@v1
