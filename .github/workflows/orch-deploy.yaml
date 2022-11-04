@@ -16,7 +16,7 @@ env:
 
 jobs:
   helmfile_job:
-    name: deploy services
+    name: deploy to EKS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +43,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: login to eks
         run: |
-          aws eks update-kubeconfig --name ${{ inputs.environment }}
+          if [ "${{ inputs.environment }}" == 'eks-dev' ]; then
+            aws eks update-kubeconfig --name ${{ inputs.environment }}
+          else
+            aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
+          fi
       - name: disable error notifications
         run: |
           kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
