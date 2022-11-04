@@ -1,0 +1,46 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+env:
+  GHCR_USER: innovationlabsmt
+  AWS_REGION: eu-west-1
+
+jobs:
+  asset_registry_job:
+    name: capture asset registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: extractions/setup-just@v1
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: login to ghcr.io
+        run: |
+          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ secrets.GHCR_TOKEN }}
+      - name: login to eks
+        run: |
+          if [ "${{ inputs.environment }}" == 'eks-dev' ]; then
+            aws eks update-kubeconfig --name ${{ inputs.environment }}
+          else
+            aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
+          fi
+      - name: generate csv
+        run: |
+          just asset-registry
+      - name: commit
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.email "${{ env.GHCR_USER }}@gig.com"
+            git config --global user.name "${{ env.GHCR_USER }}"
+            git add *.csv
+            git commit -am "chore: updating asset registry"
+            git push origin HEAD:main
+          fi
