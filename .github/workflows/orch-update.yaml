@@ -1,0 +1,45 @@
+on:
+  workflow_call:
+    inputs:
+      repository:
+        required: true
+        type: string
+      version:
+        required: false
+        type: string
+
+env:
+  GHCR_USER: innovationlabsmt
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+
+jobs:
+  update_job:
+    name: update service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GHCR_TOKEN }}
+      - name: announce
+        run: |
+          echo "Updating [${{ inputs.repository }}] to [${{ inputs.version }}]"
+      - name: update service
+        uses: mikefarah/yq@master
+        if: ${{ inputs.version }}
+        with:
+          cmd: yq e -i '.${{ inputs.repository }}|="${{ inputs.version }}"' ./releases.yaml
+      - name: remove service
+        uses: mikefarah/yq@master
+        if: ${{ !inputs.version }}
+        with:
+          cmd: yq e -i '.${{ inputs.repository }}|=sub("-deleted", "") + "-deleted"' ./releases.yaml
+      - name: commit updates
+        run: |
+          cat ./releases.yaml
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.email "${{ env.GHCR_USER }}@gig.com"
+            git config --global user.name "${{ env.GHCR_USER }}"
+            git commit -am "chore: ⬆ [${{ inputs.repository }}] to [${{ inputs.version }}]"
+            git push origin HEAD:main
+          fi
+
