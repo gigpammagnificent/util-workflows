@@ -61,7 +61,7 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
       - name: start e2e tests
         uses: benc-uk/workflow-dispatch@v1
-        if: ${{ inputs.tenantId != "skip" }}
+        if: ${{ inputs.tenantId != 'skip' }}
         with:
           workflow: E2E test
           repo: GiGInnovationLabs/endeavour-e2e
