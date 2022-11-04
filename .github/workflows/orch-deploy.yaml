@@ -24,7 +24,7 @@ jobs:
         with:
           version: latest
       - run: just test
-      - uses: mamezou-tech/setup-helmfile@v1
+      - uses: mamezou-tech/setup-helmfile@v1.0.0
         with:
           helmfile-version: 'v0.147.0'
           install-kubectl: no
