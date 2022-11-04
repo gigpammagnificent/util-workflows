@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
-          echo "Environment: ${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
+          echo "environment=${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
         with:
