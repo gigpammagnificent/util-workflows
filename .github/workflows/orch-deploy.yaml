@@ -1,10 +1,13 @@
 on:
   workflow_call:
     inputs:
-      e2e:
-        default: true
+      environment:
         required: true
-        type: boolean
+        type: string
+      tenantId:
+        required: true
+        default: skip
+        type: string
 
 env:
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -37,7 +40,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: login to eks
         run: |
-          aws eks update-kubeconfig --name eks-dev
+          aws eks update-kubeconfig --name ${{ inputs.environment }}
       - name: disable error notifications
         run: |
           kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
@@ -58,13 +61,13 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
       - name: start e2e tests
         uses: benc-uk/workflow-dispatch@v1
-        if: ${{ inputs.e2e == true }}
+        if: ${{ inputs.tenantId != "skip" }}
         with:
           workflow: E2E test
           repo: GiGInnovationLabs/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
-          inputs: '{"environment": "eks-dev", "tenantId": "demo2"}'
+          inputs: '{"environment": "${{ inputs.environment }}", "tenantId": "${{ inputs.tenantId }}"}'
       - name: capture asset registry
         uses: benc-uk/workflow-dispatch@v1
         with:
@@ -75,4 +78,4 @@ jobs:
         if: failure()
         with:
           status: ${{ job.status }}
-          message: 'Deployment failed on eks-dev'
+          message: 'Deployment failed at *${{ inputs.environment }}*'
