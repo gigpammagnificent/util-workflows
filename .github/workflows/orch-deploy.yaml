@@ -94,11 +94,11 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "❌ *Deployment failed* ❌:"
+                      "text": "❌ *Deployment failed* ❌"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "👀 <https://google.com|Workflow logs> 👀"
+                      "text": "👀 <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs> 👀"
                     }
                   ]
                 }
