@@ -23,7 +23,6 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
-          echo "@@${{ github.event.repository.html_url }}@@"
           echo "environment=${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
