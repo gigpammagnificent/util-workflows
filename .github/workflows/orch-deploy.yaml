@@ -79,7 +79,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
       - uses: slackapi/slack-github-action@v1.23.0
-        if: failure()
+        # if: failure()
         with:
           channel-id: 'eks_dev_ci'
           payload: |
