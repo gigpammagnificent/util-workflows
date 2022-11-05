@@ -23,7 +23,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
-          echo "@@${ github.event.repository.html_url }@@"
+          echo "@@${{ github.event.repository.html_url }}@@"
           echo "environment=${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
@@ -94,7 +94,7 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "❌ *Deployment failed* 👀 <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs> 👀"
+                      "text": "❌ *Deployment failed* 👀&nbsp;<${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs>&nbsp;👀"
                     }
                   ]
                 }
