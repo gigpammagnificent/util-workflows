@@ -23,6 +23,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
+          echo "@@${ github.event.repository.html_url }@@"
           echo "environment=${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
@@ -79,8 +80,25 @@ jobs:
           workflow: Asset registry
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
-      - uses: act10ns/slack@v1
+      - uses: slackapi/slack-github-action@v1.23.0
         if: failure()
         with:
-          status: ${{ job.status }}
-          message: 'Deployment failed at *${{ inputs.environment }}*'
+          channel-id: 'eks_dev_ci'
+          payload: |
+            {
+              "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+              "username": "${{ inputs.environment }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "❌ *Deployment failed* 👀 <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs> 👀"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
