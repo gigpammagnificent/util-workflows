@@ -86,13 +86,19 @@ jobs:
             {
               "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
               "username": "${{ inputs.environment }}",
+              "unfurl_links": false,
+              "unfurl_media": false,
               "blocks": [
                 {
                   "type": "section",
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "❌ *Deployment failed* 👀<${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs>👀"
+                      "text": "❌ *Deployment failed* ❌:"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "👀 <https://google.com|Workflow logs> 👀"
                     }
                   ]
                 }
