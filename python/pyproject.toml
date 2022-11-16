@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asset_registry"
+description = "extract kubernetes release information into csv"
+requires-python = ">=3.7"
+dependencies = [
+    "argparse==1.4.0"
+    ,"dotmap==1.3.30"
+    ,"kubernetes==21.7.0"
+    ,"docker==5.0.3"
+    ,"python-dateutil==2.8.2"
+]
+dynamic = ["version"]
+
+[project.scripts]
+asset_registry = "asset_registry.asset_registry:main"

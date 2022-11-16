@@ -31,6 +31,9 @@ jobs:
           else
             aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
           fi
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 'pypy3.9'
       - name: generate csv
         run: |
           just asset-registry
