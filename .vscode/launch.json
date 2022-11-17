@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+          "name": "apicurio_copy: subject",
+          "type": "python",
+          "request": "launch",
+          "program": "./python/apicurio_copy/apicurio_copy/",
+          "console": "integratedTerminal",
+          "justMyCode": true,
+          "args" : [
+            "--source-schema=https://apcrg.eks-dev01.gigndvr.com/apis/ccompat/v6"
+            ,"--dest-schema=http://apcrg.localhost/apis/ccompat/v6"
+            ,"--source-subject=user_profile_updated-value"
+            ,"--dest-subject=neville-value"
+          ]
+        }
+    ]
+  }
+  

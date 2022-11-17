@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apicurio_copy"
+description = "copy a schema from a source schema registry to a destination"
+requires-python = ">=3.7"
+dependencies = [
+    "argparse==1.4.0"
+    ,"python-schema-registry-client==2.4.1"
+]
+dynamic = ["version"]
+
+[project.scripts]
+apicurio_copy = "apicurio_copy.apicurio_copy:main"
