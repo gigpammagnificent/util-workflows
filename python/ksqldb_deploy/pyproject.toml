@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ksqldb_deploy"
+description = "deploy ksqldb schemas"
+requires-python = ">=3.7"
+dependencies = [
+    "argparse==1.4.0"
+    ,"kafka-python==2.0.2"
+    ,"ksql==0.10.2"
+    ,"PyYAML==6.0"
+    ,"Jinja2==3.1.2"
+    ,"python-schema-registry-client==2.4.1"
+]
+dynamic = ["version"]
+
+[project.scripts]
+ksqldb_deploy = "ksqldb_deploy.ksqldb_deploy:main"
+
+[tool.setuptools.packages.find]
+where= [""]
+include = ["*"]
+namespaces = false

@@ -1,0 +1,13 @@
+schemas:
+  - source-subject: endeavour_bonuses.public.user_profile_bonuses-value
+    source-version: latest
+  - source-subject: keycloak_user_events-value
+  - source-subject: endeavour_limits.public.max_wager_limits-value
+  - source-subject: endeavour_limits.public.session_limits-value
+  - source-subject: endeavour_limits.public.suspension_limits-value
+  - source-subject: endeavour_limits.public.transaction_limits-value
+  - source-subject: endeavour_restrictions.public.restrictions-value
+  - source-subject: session_context_updated-value
+  - source-subject: user_profile_updated-value
+  - source-subject: user_profile_wallet_updated-value
+  - source-subject: wallet_transaction_updated-value

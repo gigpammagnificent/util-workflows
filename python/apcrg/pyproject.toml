@@ -3,14 +3,15 @@ requires = ["setuptools", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "apicurio_copy"
+name = "apcrg"
 description = "copy a schema from a source schema registry to a destination"
 requires-python = ">=3.7"
 dependencies = [
     "argparse==1.4.0"
     ,"python-schema-registry-client==2.4.1"
+    ,"pyyaml==6.0"
 ]
 dynamic = ["version"]
 
 [project.scripts]
-apicurio_copy = "apicurio_copy.apicurio_copy:main"
+apcrg = "apcrg.apcrg:main"
