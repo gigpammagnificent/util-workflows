@@ -4,9 +4,6 @@ on:
       environment:
         required: true
         type: string
-      tenantId:
-        required: false
-        type: string
 
 env:
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -22,7 +19,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
-          echo "environment=${{ inputs.environment }}, E2E tenantId=${{ inputs.tenantId }}"
+          echo "environment=${{ inputs.environment }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
         with:
@@ -65,13 +62,12 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
       - name: start e2e tests
         uses: benc-uk/workflow-dispatch@v1
-        if: ${{ inputs.tenantId }}
         with:
           workflow: E2E test
           repo: GiGInnovationLabs/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
-          inputs: '{"environment": "${{ inputs.environment }}", "tenantId": "${{ inputs.tenantId }}"}'
+          inputs: '{"environment": "${{ inputs.environment }}"}'
       - name: capture asset registry
         uses: benc-uk/workflow-dispatch@v1
         with:
