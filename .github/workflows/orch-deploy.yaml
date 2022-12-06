@@ -4,6 +4,10 @@ on:
       environment:
         required: true
         type: string
+      e2e:
+        required: false
+        default: true
+        type: boolean
 
 env:
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -19,7 +23,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - name: announce
         run: |
-          echo "environment=${{ inputs.environment }}"
+          echo "environment=${{ inputs.environment }}, e2e=${{ inputs.e2e }}"
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
         with:
