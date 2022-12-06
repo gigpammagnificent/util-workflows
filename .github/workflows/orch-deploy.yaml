@@ -24,6 +24,9 @@ jobs:
       - name: announce
         run: |
           echo "environment=${{ inputs.environment }}, e2e=${{ inputs.e2e }}"
+          echo "@@${{ inputs.e2e }}@@"
+      - run: echo HELLO
+        if: ${{ inputs.e2e == true }}
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
         with:
