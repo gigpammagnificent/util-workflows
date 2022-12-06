@@ -24,9 +24,6 @@ jobs:
       - name: announce
         run: |
           echo "environment=${{ inputs.environment }}, e2e=${{ inputs.e2e }}"
-          echo "@@${{ inputs.e2e }}@@"
-      - run: echo HELLO
-        if: ${{ inputs.e2e == true }}
       - uses: extractions/setup-just@v1
       - uses: open-policy-agent/setup-opa@v1
         with:
@@ -69,6 +66,7 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
       - name: start e2e tests
         uses: benc-uk/workflow-dispatch@v1
+        if: ${{ inputs.e2e == true }}
         with:
           workflow: E2E test
           repo: GiGInnovationLabs/endeavour-e2e
