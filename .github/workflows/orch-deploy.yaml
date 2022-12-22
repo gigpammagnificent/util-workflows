@@ -25,6 +25,8 @@ jobs:
         run: |
           echo "environment=${{ inputs.environment }}, e2e=${{ inputs.e2e }}"
       - uses: extractions/setup-just@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
       - uses: open-policy-agent/setup-opa@v1
         with:
           version: latest
