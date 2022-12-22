@@ -25,6 +25,8 @@ jobs:
           configFile: .commitlintrc.yml
           token: ${{ secrets.GHCR_TOKEN }}
       - uses: extractions/setup-just@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
       - uses: docker/login-action@v1
         with:
           registry: ghcr.io
