@@ -53,6 +53,7 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
       - name: synchronize services
         run: |
+          echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
           helmfile apply --concurrency 4
       - name: check services
         run: |
@@ -62,6 +63,18 @@ jobs:
           fi
           kubectl get ds,deploy -n endeavour -o name | xargs -r kubectl rollout status -n endeavour --timeout=3m
           just health-opa
+      - name: create deployment annotation
+        if: always()
+        run: |
+          echo "DEPLOYMENT_END=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
+          kubectl run curl-pod --image=curlimages/curl --attach --restart=Never --rm -- curl --request POST http://kube-prometheus-stack-grafana.prometheus.svc.cluster.local:80/api/annotations \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "time":${{ env.DEPLOYMENT_BEGIN }},
+            "timeEnd":${{ env.DEPLOYMENT_END }},
+            "tags":["deployment", "${{ job.status }}"],
+            "text":"Deployment"
+          }' 
       - name: enable error notifications
         if: always()
         run: |
