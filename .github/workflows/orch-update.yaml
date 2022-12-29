@@ -35,6 +35,7 @@ jobs:
           cmd: yq e -i '.${{ inputs.repository }}|=sub("-deleted", "") + "-deleted"' ./releases.yaml
       - name: commit updates
         run: |
+          sort -o ./releases.yaml ./releases.yaml
           cat ./releases.yaml
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.email "${{ env.GHCR_USER }}@gig.com"
