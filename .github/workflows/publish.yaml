@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 2
           token: ${{ secrets.GHCR_TOKEN }}
@@ -43,10 +43,26 @@ jobs:
           helm dep up
           helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} .
           helm push ${{ github.event.repository.name }}-${{ env.VERSION }}.tgz oci://ghcr.io/giginnovationlabs/helm
+      - id: hasRego
+        run: |
+          if [ "$(find src/ -name '*.rego' ! -name 'entrypoints.rego' 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "HAS_REGO=true" >> $GITHUB_ENV
+          fi
+      - if: ${{ env.HAS_REGO == 'true' }}
+        uses: jaxxstorm/action-install-gh-release@v1
+        with:
+          repo: opcr-io/policy
+          tag: v0.1.44
+          cache: enable
+      # TODO create just receipe
+      - if: ${{ env.HAS_REGO == 'true' }}
+        run: |
+          echo ${{ secrets.GHCR_TOKEN }} | policy login -s ghcr.io -u ${{ env.GHCR_USER }} --password-stdin
+          policy build -t ghcr.io/giginnovationlabs/opa/${{ github.event.repository.name }}:${{ env.VERSION }} src/
+          policy push ghcr.io/giginnovationlabs/opa/${{ github.event.repository.name }}:${{ env.VERSION }}
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }}
-
       - id: skipDeploy
         uses: Legorooj/skip-ci@main
         with:
