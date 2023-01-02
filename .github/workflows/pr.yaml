@@ -91,7 +91,6 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: helm login
         run: |
-          helm version
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: volesen/setup-skaffold@v1.1
         with:
