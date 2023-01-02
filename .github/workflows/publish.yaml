@@ -23,14 +23,11 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
       - uses: extractions/setup-just@v1
       - run: echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
           password: ${{ env.GHCR_TOKEN }}
-      - uses: azure/setup-helm@v1
-        with:
-          version: '3.8.0'
       - uses: volesen/setup-skaffold@v1.1
         with:
           version: 'v1.38.0'

@@ -26,10 +26,6 @@ jobs:
       - uses: extractions/setup-just@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      - run: |
-          if [ "$(find src/ -name '*.rego' ! -name 'entrypoints.rego' 2>/dev/null | wc -l)" -gt 0 ]; then
-            echo "HAS_REGO=true" >> $GITHUB_ENV
-          fi
       - uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -37,7 +33,6 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: helm login
         run: |
-          helm version
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: actions/setup-dotnet@v1
         with:
@@ -48,7 +43,7 @@ jobs:
           pattern: '\[skip\stest\]'
           token: ${{ env.GHCR_TOKEN }}
       - name: setup opa
-        if: ${{ steps.skipTest.outputs.canSkip != 'true' && env.HAS_REGO == 'true' }}
+        if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v1
         with:
           version: latest
@@ -96,6 +91,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: helm login
         run: |
+          helm version
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - uses: volesen/setup-skaffold@v1.1
         with:
