@@ -14,7 +14,7 @@ jobs:
     name: Publish release artifacts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0.x'
       - uses: actions/checkout@v3
@@ -22,7 +22,10 @@ jobs:
           fetch-depth: 2
           token: ${{ secrets.GHCR_TOKEN }}
       - uses: extractions/setup-just@v1
-      - run: echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      - name: version
+        run: echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
       - uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -32,11 +35,12 @@ jobs:
         with:
           version: 'v1.38.0'
       # TODO create just receipe
-      - run: skaffold build -t ${{ env.VERSION }}
-      - run: |
-          just openapi
-          just publish ${{ env.VERSION }}
+      - name: publish
+        run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
+
+          skaffold build -t ${{ env.VERSION }}
+          just publish ${{ env.VERSION }}
           helm dep up
           helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} .
           helm push ${{ github.event.repository.name }}-${{ env.VERSION }}.tgz oci://ghcr.io/giginnovationlabs/helm
