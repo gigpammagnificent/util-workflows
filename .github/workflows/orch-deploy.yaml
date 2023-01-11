@@ -70,7 +70,7 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
             "time":${{ env.DEPLOYMENT_BEGIN }},
-            "timeEnd":$(($(date +%s%N)/1000000)),
+            "timeEnd":'$(($(date +%s%N)/1000000))',
             "tags":["deployment", "${{ job.status }}"],
             "text":"Deployment"
           }' 
