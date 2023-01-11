@@ -66,12 +66,11 @@ jobs:
       - name: create deployment annotation
         if: always()
         run: |
-          echo "DEPLOYMENT_END=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
           kubectl run curl-pod --image=curlimages/curl --attach --restart=Never --rm -- curl --request POST http://kube-prometheus-stack-grafana.prometheus.svc.cluster.local:80/api/annotations \
           --header 'Content-Type: application/json' \
           --data-raw '{
             "time":${{ env.DEPLOYMENT_BEGIN }},
-            "timeEnd":${{ env.DEPLOYMENT_END }},
+            "timeEnd":$(($(date +%s%N)/1000000)),
             "tags":["deployment", "${{ job.status }}"],
             "text":"Deployment"
           }' 
