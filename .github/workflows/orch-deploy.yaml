@@ -73,7 +73,7 @@ jobs:
             "timeEnd":'$(($(date +%s%N)/1000000))',
             "tags":["deployment", "${{ job.status }}"],
             "text":"Deployment"
-          }' 
+          }'
       - name: enable error notifications
         if: always()
         run: |
@@ -88,6 +88,7 @@ jobs:
           ref: main
           inputs: '{"environment": "${{ inputs.environment }}"}'
       - name: capture asset registry
+        if: ${{ false }}
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Asset registry
