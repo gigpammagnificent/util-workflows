@@ -15,37 +15,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: main
+      - uses: actions/checkout@v3
+        with:
+          ref: asset-registry
+          token: ${{ secrets.GHCR_TOKEN }}
+          path: asset-registry
       - uses: extractions/setup-just@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
-      - uses: aws-actions/configure-aws-credentials@v1
+      - name: setup aws cli
+        if: ${{ startsWith(inputs.environment, 'eks-') }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: login to ghcr.io
-        run: |
-          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ secrets.GHCR_TOKEN }}
       - name: login to eks
+        if: ${{ startsWith(inputs.environment, 'eks-') }}
         run: |
           if [ "${{ inputs.environment }}" == 'eks-dev' ]; then
             aws eks update-kubeconfig --name ${{ inputs.environment }}
           else
             aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
           fi
+      - name: login to ghcr.io
+        run: |
+          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ secrets.GHCR_TOKEN }}
       - uses: actions/setup-python@v4
         with:
           python-version: 'pypy3.9'
+          cache: 'pip'
+          cache-dependency-path: "main/requirements.txt"
       - name: generate csv
         run: |
-          just asset-registry
-      - name: commit
+          echo "ORCH_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          cp -f ../asset-registry/assets.csv .
+          just assets
+          cp -f releases.yaml assets.csv ../asset-registry
+        working-directory: main
+      - name: store csv
         run: |
-          git status --porcelain
-          if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.email "${{ env.GHCR_USER }}@gig.com"
-            git config --global user.name "${{ env.GHCR_USER }}"
-            git add *.csv
-            git commit -am "chore: updating asset registry"
-            git push origin HEAD:main
-          fi
+          git add .
+          git status
+        working-directory: ./asset-registry
+      - name: publish csv
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: asset-registry
+          directory: ./asset-registry
+          message: |
+            chore(assets): registry captured for sha ${{ env.ORCH_SHA }}
