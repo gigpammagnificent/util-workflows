@@ -4,10 +4,6 @@ on:
       environment:
         required: true
         type: string
-      e2e:
-        required: false
-        default: true
-        type: boolean
 
 env:
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -21,9 +17,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GHCR_TOKEN }}
+      - name: is e2e enabled
+        run: |
+          if [ -f .skip_e2e ] || [ -f .skip-e2e ] || [ -f .skip.e2e ]; then
+            echo "E2E=false" >> $GITHUB_ENV
+          else
+            echo "E2E=true" >> $GITHUB_ENV
+          fi
       - name: announce
         run: |
-          echo "environment=${{ inputs.environment }}, e2e=${{ inputs.e2e }}"
+          echo "environment=${{ inputs.environment }}, e2e=${{ env.E2E }}"
       - uses: extractions/setup-just@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -36,12 +39,15 @@ jobs:
           helmfile-version: 'v0.147.0'
           install-kubectl: no
           install-helm: no
-      - uses: aws-actions/configure-aws-credentials@v1
+      - name: setup aws cli
+        if: ${{ startsWith(inputs.environment, 'eks-') }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: login to eks
+        if: ${{ startsWith(inputs.environment, 'eks-') }}
         run: |
           if [ "${{ inputs.environment }}" == 'eks-dev' ]; then
             aws eks update-kubeconfig --name ${{ inputs.environment }}
@@ -55,14 +61,14 @@ jobs:
         run: |
           echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
           helmfile apply --concurrency 4
-      - name: check services
+      - name: health checks
         run: |
           if [ ! -z "$(helm ls -a -o yaml -n endeavour | yq e '.[].status' - | grep -v '^deployed$')" ]; then
             echo "::error title=status::Some charts not deployed !!!"
             exit 1
           fi
           kubectl get ds,deploy -n endeavour -o name | xargs -r kubectl rollout status -n endeavour --timeout=3m
-          just health-opa
+          just health
       - name: create deployment annotation
         if: always()
         run: |
@@ -80,7 +86,7 @@ jobs:
           kubectl patch daemonset fluent-bit -n telemetry --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]' || true
       - name: start e2e tests
         uses: benc-uk/workflow-dispatch@v1
-        if: ${{ inputs.e2e == true }}
+        if: ${{ env.E2E == 'true' }}
         with:
           workflow: E2E test
           repo: GiGInnovationLabs/endeavour-e2e
