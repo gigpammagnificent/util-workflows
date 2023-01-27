@@ -72,7 +72,7 @@ jobs:
       - uses: benc-uk/workflow-dispatch@v1
         if: ${{ steps.skipDeploy.outputs.canSkip != 'true' }}
         with:
-          workflow: Update
+          workflow: update.yaml
           repo: GiGInnovationLabs/orch-eks-dev
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
