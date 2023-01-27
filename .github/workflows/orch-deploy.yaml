@@ -13,6 +13,7 @@ jobs:
   helmfile_job:
     name: deploy to EKS
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-orch-template') }}
     steps:
       - uses: actions/checkout@v3
         with:

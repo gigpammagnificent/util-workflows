@@ -13,6 +13,7 @@ jobs:
   asset_registry_job:
     name: capture asset registry
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-orch-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
