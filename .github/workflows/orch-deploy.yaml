@@ -37,7 +37,7 @@ jobs:
       - run: just test
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
-          helmfile-version: 'v0.147.0'
+          helmfile-version: 'v0.149.0'
           install-kubectl: no
           install-helm: no
       - name: setup aws cli
@@ -55,6 +55,28 @@ jobs:
           else
             aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
           fi
+      - name: setup openvpn
+        if: ${{ startsWith(inputs.environment, 'iv-') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get --assume-yes --no-install-recommends install openvpn
+          echo "OVPN_USERNAME_PASSWORD_KEY=${{ inputs.environment }}_OVPN_USERNAME_PASSWORD" | sed 's/-/_/g' >> $GITHUB_ENV
+          echo "OVPN_CONF_KEY=${{ inputs.environment }}_OVPN_CONF" | sed 's/-/_/g' >> $GITHUB_ENV
+          echo "KUBE_CONFIG_DATA_KEY=${{ inputs.environment }}_KUBE_CONFIG_DATA" | sed 's/-/_/g' >> $GITHUB_ENV
+      - name: start openvpn
+        if: ${{ startsWith(inputs.environment, 'iv-') }}
+        run: |
+          echo "${{ secrets[env.OVPN_USERNAME_PASSWORD_KEY] }}" > secrets.txt
+          echo "${{ secrets[env.OVPN_CONF_KEY] }}" > config.ovpn
+          mkdir $HOME/.kube
+          echo "${{ secrets[env.KUBE_CONFIG_DATA_KEY] }}" > $HOME/.kube/config
+          sudo chmod 600 $HOME/.kube/config
+          sudo echo '10.100.235.50 haproxy' | sudo tee -a /etc/hosts
+          sudo openvpn --config config.ovpn --log openvpn.log --daemon
+      - name: wait for openvpn
+        if: ${{ startsWith(inputs.environment, 'iv-') }}
+        run: |
+          until ping -c1 haproxy; do sleep 2; done
       - name: disable error notifications
         run: |
           kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
@@ -101,7 +123,7 @@ jobs:
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
       - uses: slackapi/slack-github-action@v1.23.0
-        if: failure()
+        if: ${{ failure() }}
         with:
           channel-id: 'eks_dev_ci'
           payload: |
@@ -128,3 +150,17 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: stop openvpn
+        if: ${{ always() }}
+        run: |
+          if [ "${{ startsWith(inputs.environment, 'iv-') }}" == 'true' ]; then
+            sudo chmod 777 openvpn.log
+            sudo killall openvpn
+          fi
+      - name: archive openvpn logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: OpenVPN logs
+          path: openvpn.log
+          if-no-files-found: ignore
