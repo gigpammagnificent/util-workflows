@@ -1,4 +1,4 @@
-on:
+Gon:
   workflow_call:
     inputs:
       environment:
@@ -125,7 +125,7 @@ jobs:
       - uses: slackapi/slack-github-action@v1.23.0
         if: ${{ failure() }}
         with:
-          channel-id: 'eks_dev_ci'
+          channel-id: 'alert-orch'
           payload: |
             {
               "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
