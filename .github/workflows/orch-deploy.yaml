@@ -129,27 +129,35 @@ jobs:
           payload: |
             {
               "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-              "username": "${{ inputs.environment }}",
-              "unfurl_links": false,
-              "unfurl_media": false,
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "❌ *Deployment failed* ❌"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "👀 <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs> 👀"
-                    }
-                  ]
-                }
-              ]
+              "username": "${{ inputs.environment }}", "unfurl_links": false, "unfurl_media": false,
+              "blocks": [{
+                "type": "section",
+                "fields": [
+                  {"type": "mrkdwn", "text": "❌ *Deployment failed* ❌"},
+                  {"type": "mrkdwn", "text": "👀 <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}|Workflow logs> 👀"}
+                ]
+              }]
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: open opsgenie alert
+        uses: rockem/create-opsgenie-alert-action@v1
+        if: ${{ failure() }}
+        with:
+          api_key: ${{ secrets.OPSGENIE_API_KEY }}
+          alias: orch-${{ inputs.environment }}
+          message: Deployment failed
+          description: ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
+          priority: P3
+          tags: orch,${{ inputs.environment }}
+          using_eu_url: true
+      - name: close opsgenie alert
+        uses: rockem/close-opsgenie-alert-action@v1
+        if: ${{ success() }}
+        with:
+          api_key: ${{ secrets.OPSGENIE_API_KEY }}
+          alias: orch-${{ inputs.environment }}
+          using_eu_url: true
       - name: stop openvpn
         if: ${{ always() }}
         run: |
