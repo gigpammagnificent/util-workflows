@@ -149,7 +149,7 @@ jobs:
           message: Deployment failed
           description: ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
           priority: P3
-          tags: orch,${{ inputs.environment }}
+          tags: github,orch,${{ inputs.environment }}
           using_eu_url: true
       - name: close opsgenie alert
         uses: rockem/close-opsgenie-alert-action@v1
