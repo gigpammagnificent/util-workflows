@@ -147,7 +147,8 @@ jobs:
           api_key: ${{ secrets.OPSGENIE_API_KEY }}
           alias: orch-${{ inputs.environment }}
           message: Deployment failed
-          description: ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
+          description: |
+            <a target="_blank" href="${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}">Workflow logs</a>
           priority: P3
           tags: github,orch,${{ inputs.environment }}
           using_eu_url: true
