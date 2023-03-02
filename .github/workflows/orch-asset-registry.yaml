@@ -74,9 +74,9 @@ jobs:
       - name: generate csv
         run: |
           echo "ORCH_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          cp -f ../asset-registry/assets.csv .
+          cp -f ../asset-registry/assets*.csv .
           just assets
-          cp -f releases.yaml assets.csv ../asset-registry
+          cp -f releases.yaml assets*.csv ../asset-registry
         working-directory: main
       - name: store csv
         run: |
