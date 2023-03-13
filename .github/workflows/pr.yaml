@@ -46,7 +46,7 @@ jobs:
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v2
         with:
-          version: latest
+          version: 0.49
       - name: test
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         run: just test
