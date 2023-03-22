@@ -8,6 +8,8 @@ env:
   GHCR_USER: innovationlabsmt
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   REPO_DEVOPS_BRANCH: main
+  ECLINT_REPO: editorconfig-checker/editorconfig-checker
+  ECLINT_VERSION: 2.7.0
 
 jobs:
   test:
@@ -47,6 +49,18 @@ jobs:
         uses: open-policy-agent/setup-opa@v2
         with:
           version: 0.49
+      - uses: jaxxstorm/action-install-gh-release@v1
+        if: ${{ contains(github.repository, '-opa-') && steps.skipTest.outputs.canSkip != 'true' }}
+        with:
+          repo: ${{ env.ECLINT_REPO }}
+          tag: ${{ env.ECLINT_VERSION }}
+          binaries-location: bin
+          chmod: 0755
+      - if: ${{ contains(github.repository, '-opa-') && steps.skipTest.outputs.canSkip != 'true' }}
+        run: |
+          ln -s /opt/hostedtoolcache/${{ env.ECLINT_REPO }}/${{ env.ECLINT_VERSION }}/linux-x64/bin/ec-linux-amd64 \
+            /opt/hostedtoolcache/${{ env.ECLINT_REPO }}/${{ env.ECLINT_VERSION }}/linux-x64/bin/editorconfig-checker
+          editorconfig-checker --version
       - name: test
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         run: just test
