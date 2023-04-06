@@ -34,6 +34,10 @@ jobs:
       - uses: open-policy-agent/setup-opa@v2
         with:
           version: 0.49
+      - uses: jaxxstorm/action-install-gh-release@v1
+        with:
+          repo: shenwei356/rush
+          tag: v0.5.0
       - run: just test
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
@@ -84,13 +88,8 @@ jobs:
         run: |
           echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
           helmfile apply --concurrency 4
-      - name: health checks
+      - name: health check
         run: |
-          if [ ! -z "$(helm ls -a -o yaml -n endeavour | yq e '.[].status' - | grep -v '^deployed$')" ]; then
-            echo "::error title=status::Some charts not deployed !!!"
-            exit 1
-          fi
-          kubectl get ds,deploy -n endeavour -o name | xargs -r kubectl rollout status -n endeavour --timeout=3m
           just health
       - name: create deployment annotation
         if: always()
