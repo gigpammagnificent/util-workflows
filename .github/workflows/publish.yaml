@@ -73,7 +73,7 @@ jobs:
         if: ${{ steps.skipDeploy.outputs.canSkip != 'true' }}
         with:
           workflow: update.yaml
-          repo: GiGInnovationLabs/orch-eks-dev
+          repo: ${{ GHCR_ORG }}/${{ NDVR_DEV }}
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
           inputs: '{"repository": "${{ github.event.repository.name }}", "version": "${{ env.VERSION }}"}'
