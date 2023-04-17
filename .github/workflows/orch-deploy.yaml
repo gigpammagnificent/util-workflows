@@ -111,7 +111,7 @@ jobs:
         if: ${{ env.E2E == 'true' }}
         with:
           workflow: E2E test
-          repo: ${{ GHCR_ORG }}/endeavour-e2e
+          repo: ${{ vars.GHCR_ORG }}/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
           inputs: '{"environment": "${{ inputs.environment }}"}'
