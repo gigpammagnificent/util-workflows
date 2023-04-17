@@ -8,15 +8,11 @@ on:
         required: false
         type: string
 
-env:
-  GHCR_USER: innovationlabsmt
-  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-
 jobs:
   update_job:
     name: update service
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-orch-template') }}
+    if: ${{ !contains(github.repository, 'util-orch-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,8 +35,8 @@ jobs:
           sort -o ./releases.yaml ./releases.yaml
           cat ./releases.yaml
           if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.email "${{ env.GHCR_USER }}@gig.com"
-            git config --global user.name "${{ env.GHCR_USER }}"
+            git config --global user.email "${{ vars.GHCR_USER }}@ndvr.com"
+            git config --global user.name "${{ vars.GHCR_USER }}"
             git commit -am "chore: ⬆ [${{ inputs.repository }}] to [${{ inputs.version }}]"
             git push origin HEAD:main
           fi
