@@ -43,7 +43,7 @@ jobs:
           just publish ${{ env.VERSION }}
           helm dep up
           helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} .
-          helm push ${{ github.event.repository.name }}-${{ env.VERSION }}.tgz oci://ghcr.io/giginnovationlabs/helm
+          helm push ${{ github.event.repository.name }}-${{ env.VERSION }}.tgz oci://ghcr.io/${{ vars.GHCR_ORG }}/helm
       - id: hasRego
         run: |
           if [ "$(find src/ -name '*.rego' ! -name 'entrypoints.rego' 2>/dev/null | wc -l)" -gt 0 ]; then
@@ -59,8 +59,8 @@ jobs:
       - if: ${{ env.HAS_REGO == 'true' }}
         run: |
           echo ${{ secrets.GHCR_TOKEN }} | policy login -s ghcr.io -u ${{ env.GHCR_USER }} --password-stdin
-          policy build -t ghcr.io/giginnovationlabs/opa/${{ github.event.repository.name }}:${{ env.VERSION }} src/
-          policy push ghcr.io/giginnovationlabs/opa/${{ github.event.repository.name }}:${{ env.VERSION }}
+          policy build -t ghcr.io/${{ vars.GHCR_ORG }}/opa/${{ github.event.repository.name }}:${{ env.VERSION }} src/
+          policy push ghcr.io/${{ vars.GHCR_ORG }}/opa/${{ github.event.repository.name }}:${{ env.VERSION }}
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }}
