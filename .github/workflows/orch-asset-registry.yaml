@@ -6,7 +6,6 @@ on:
         type: string
 
 env:
-  GHCR_USER: innovationlabsmt
   GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
   AWS_REGION: eu-west-1
 
@@ -14,7 +13,7 @@ jobs:
   asset_registry_job:
     name: capture asset registry
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-orch-template') }}
+    if: ${{ !contains(github.repository, 'util-orch-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -65,7 +64,7 @@ jobs:
           until ping -c1 haproxy; do sleep 2; done
       - name: login to ghcr.io
         run: |
-          docker login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ secrets.GHCR_TOKEN }}
+          docker login ghcr.io -u ${{ vars.GHCR_USER }} -p ${{ secrets.GHCR_TOKEN }}
       - uses: actions/setup-python@v4
         with:
           python-version: 'pypy3.9'
