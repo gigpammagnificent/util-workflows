@@ -13,7 +13,7 @@ jobs:
   helmfile_job:
     name: deploy to EKS
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-orch-template') }}
+    if: ${{ !contains(github.repository, 'util-orch-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -111,7 +111,7 @@ jobs:
         if: ${{ env.E2E == 'true' }}
         with:
           workflow: E2E test
-          repo: GiGInnovationLabs/endeavour-e2e
+          repo: ${{ GHCR_ORG }}/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
           inputs: '{"environment": "${{ inputs.environment }}"}'
