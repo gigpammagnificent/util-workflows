@@ -15,7 +15,7 @@ jobs:
   test:
     name: run tests
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-dotnet-template') }}
+    if: ${{ !contains(github.repository, 'util-dotnet-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -90,7 +90,7 @@ jobs:
   k3d:
     name: deploy to k3d
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.repository, 'GiGInnovationLabs/util-dotnet-template') }}
+    if: ${{ !contains(github.repository, 'util-dotnet-template') }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -121,7 +121,7 @@ jobs:
         with:
           path: ./devops
           token: ${{ secrets.GHCR_TOKEN }}
-          repository: GiGInnovationLabs/devops
+          repository: ${{ vars.GHCR_ORG }}/devops
           ref: ${{ env.REPO_DEVOPS_BRANCH }}
       - name: deploy infrastructure
         working-directory: ./devops/helmfile
