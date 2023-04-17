@@ -64,13 +64,7 @@ jobs:
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id')
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }}
-      - id: skipDeploy
-        uses: Legorooj/skip-ci@main
-        with:
-          pattern: '\[skip\sdeploy\]'
-          token: ${{ secrets.GHCR_TOKEN }}
       - uses: benc-uk/workflow-dispatch@v1
-        if: ${{ steps.skipDeploy.outputs.canSkip != 'true' }}
         with:
           workflow: update.yaml
           repo: ${{ vars.GHCR_ORG }}/orch-${{ vars.NDVR_DEV }}
