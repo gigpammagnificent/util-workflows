@@ -63,8 +63,8 @@ jobs:
           policy build -t ghcr.io/${{ vars.GHCR_ORG }}/opa/${{ github.event.repository.name }}:${{ env.VERSION }} src/
           policy push ghcr.io/${{ vars.GHCR_ORG }}/opa/${{ github.event.repository.name }}:${{ env.VERSION }}
       - run: |
-          REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id')
-          gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }}
+          REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id' || true)
+          gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }} || true
       - uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: update.yaml
