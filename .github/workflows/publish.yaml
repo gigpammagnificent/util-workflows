@@ -5,6 +5,7 @@ on:
         required: true
 
 env:
+  GHCR_ORG: ${{ vars.GHCR_ORG }}
   GHCR_USER: ${{ vars.GHCR_USER }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
