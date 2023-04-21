@@ -160,7 +160,8 @@ jobs:
           using_eu_url: true
       - name: close opsgenie alert
         uses: rockem/close-opsgenie-alert-action@v1
-        if: ${{ success() }}
+        # if: ${{ success() }}
+        if: ${{ false }}
         with:
           api_key: ${{ secrets.OPSGENIE_API_KEY }}
           alias: orch-${{ inputs.environment }}
