@@ -140,8 +140,9 @@ jobs:
           helmfile -f helmfile.yaml -e k3d repos
           helmfile -f helmfile.yaml -e k3d -l name=ksqldb sync --skip-deps
       - name: deploy microservice
-        kubectl get ns
-        run: just up
+        run: |
+          kubectl get ns
+          just up
       - name: failure logs ksqldb
         if: ${{ failure() && contains(github.repository, 'dwh') }}
         run: |
