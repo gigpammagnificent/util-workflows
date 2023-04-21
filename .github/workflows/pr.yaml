@@ -3,6 +3,9 @@ on:
     secrets:
       GHCR_TOKEN:
         required: true
+permissions:
+  statuses: write
+  checks: write
 env:
   GHCR_USER: ${{ vars.GHCR_USER }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
