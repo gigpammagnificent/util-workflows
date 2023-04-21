@@ -3,7 +3,9 @@ on:
     secrets:
       GHCR_TOKEN:
         required: true
-
+permissions:
+  statuses: write
+  checks: write
 env:
   GHCR_USER: ${{ vars.GHCR_USER }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -11,7 +13,6 @@ env:
   REPO_DEVOPS_BRANCH: main
   ECLINT_REPO: editorconfig-checker/editorconfig-checker
   ECLINT_VERSION: 2.7.0
-
 jobs:
   test:
     name: run tests
