@@ -4,11 +4,10 @@ on:
       environment:
         required: true
         type: string
-
 env:
+  GHCR_ORG: ${{ vars.GHCR_ORG }}
   GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
   AWS_REGION: eu-west-1
-
 jobs:
   asset_registry_job:
     name: capture asset registry
