@@ -148,7 +148,8 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: open opsgenie alert
         uses: rockem/create-opsgenie-alert-action@v1
-        if: ${{ failure() }}
+        # if: ${{ failure() }}
+        if: ${{ false }}
         with:
           api_key: ${{ secrets.OPSGENIE_API_KEY }}
           alias: orch-${{ inputs.environment }}
