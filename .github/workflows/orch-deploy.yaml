@@ -109,7 +109,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         if: ${{ env.E2E == 'true' }}
         with:
-          workflow: E2E test
+          workflow: e2e.yaml
           repo: ${{ vars.GHCR_ORG }}/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
