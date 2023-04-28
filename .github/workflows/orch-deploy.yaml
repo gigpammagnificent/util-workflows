@@ -40,7 +40,7 @@ jobs:
       - run: just test
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
-          helmfile-version: 'v0.149.0'
+          helmfile-version: 'v0.153.1'
           install-kubectl: no
           install-helm: no
       - name: setup aws cli

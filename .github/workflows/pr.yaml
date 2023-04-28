@@ -113,9 +113,9 @@ jobs:
       - uses: rinx/setup-k3d@v0.0.4
         with:
           skipClusterCreation: true
-      - uses: mamezou-tech/setup-helmfile@v1.0.0
+      - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
-          helmfile-version: "v0.146.0"
+          helmfile-version: "v0.153.1"
           install-kubectl: no
           install-helm: no
       - uses: actions/checkout@v3
