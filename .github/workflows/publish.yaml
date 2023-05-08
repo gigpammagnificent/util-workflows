@@ -65,10 +65,10 @@ jobs:
       - run: |
           REL_ID=$(gh api -X GET repos/{owner}/{repo}/releases --jq '.[] | select(.tag_name == "${{ env.VERSION }}") | .id' || true)
           gh api -X PATCH repos/{owner}/{repo}/releases/${REL_ID} -F prerelease=false -F name=${{ env.VERSION }} || true
-      # - uses: benc-uk/workflow-dispatch@v1
-        # with:
-          # workflow: update.yaml
-          # repo: ${{ vars.GHCR_ORG }}/orch-${{ vars.NDVR_DEV }}
-          # token: ${{ secrets.GHCR_TOKEN }}
-          # ref: main
-          # inputs: '{"repository": "${{ github.event.repository.name }}", "version": "${{ env.VERSION }}"}'
+      - uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: update.yaml
+          repo: ${{ vars.GHCR_ORG }}/orch-${{ vars.NDVR_DEV }}
+          token: ${{ secrets.GHCR_TOKEN }}
+          ref: main
+          inputs: '{"repository": "${{ github.event.repository.name }}", "version": "${{ env.VERSION }}"}'
