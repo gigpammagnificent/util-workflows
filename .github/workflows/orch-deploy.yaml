@@ -86,7 +86,7 @@ jobs:
       - name: synchronize services
         run: |
           echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
-          helmfile sync --concurrency 4
+          helmfile apply --concurrency 4
       - name: health check
         run: |
           just health
