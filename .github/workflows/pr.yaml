@@ -113,7 +113,7 @@ jobs:
           version: v1.38.0
       - uses: rinx/setup-k3d@v0.0.4
         with:
-          version: v5.5.1
+          version: v5.4.9
           skipClusterCreation: true
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
