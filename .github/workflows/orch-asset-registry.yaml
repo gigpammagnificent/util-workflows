@@ -44,14 +44,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get --assume-yes --no-install-recommends install openvpn
-          echo "OVPN_USERNAME_PASSWORD_KEY=${{ inputs.environment }}_OVPN_USERNAME_PASSWORD" | sed 's/-/_/g' >> $GITHUB_ENV
-          echo "OVPN_CONF_KEY=${{ inputs.environment }}_OVPN_CONF" | sed 's/-/_/g' >> $GITHUB_ENV
           echo "KUBE_CONFIG_DATA_KEY=${{ inputs.environment }}_KUBE_CONFIG_DATA" | sed 's/-/_/g' >> $GITHUB_ENV
       - name: start openvpn
         if: ${{ startsWith(inputs.environment, 'iv-') }}
         run: |
-          echo "${{ secrets[env.OVPN_USERNAME_PASSWORD_KEY] }}" > secrets.txt
-          echo "${{ secrets[env.OVPN_CONF_KEY] }}" > config.ovpn
+          echo "${{ secrets.NDVR_OVPN_USERNAME_PASSWORD }}" > secrets.txt
+          echo "${{ secrets.NDVR_OVPN_CONF }}" > config.ovpn
           mkdir $HOME/.kube
           echo "${{ secrets[env.KUBE_CONFIG_DATA_KEY] }}" > $HOME/.kube/config
           sudo chmod 600 $HOME/.kube/config
