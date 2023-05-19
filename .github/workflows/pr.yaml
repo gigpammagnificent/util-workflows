@@ -113,7 +113,7 @@ jobs:
           version: v1.38.0
       - uses: rinx/setup-k3d@v0.0.4
         with:
-          version: v5.4.9
+          version: v5.5.1
           skipClusterCreation: true
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
@@ -135,9 +135,7 @@ jobs:
         if: ${{ contains(github.repository, 'dwh') }}
         working-directory: ./devops/helmfile
         run: |
-          helmfile -e k3d -f ./helmfile-minimal.yaml \
-            -l name=kubernetes-replicator sync --skip-deps
-
+          helmfile -e k3d -f ./helmfile-minimal.yaml -l name=kubernetes-replicator sync --skip-deps
           helmfile -f helmfile.yaml -e k3d repos
           helmfile -f helmfile.yaml -e k3d -l name=ksqldb sync --skip-deps
       - name: deploy microservice
@@ -154,23 +152,19 @@ jobs:
         if: ${{ failure() }}
         run: |
           CHART=$(basename `pwd`)
-
           echo "------------------------------------------------------------------------------------------------------------------"
           kubectl get all -n apicurio
           echo "------------------------------------------------------------------------------------------------------------------"
           kubectl logs -l app.kubernetes.io/name=apicurio-registry -n apicurio --tail=-1
           echo "------------------------------------------------------------------------------------------------------------------"
-
           echo "------------------------------------------------------------------------------------------------------------------"
           kubectl get all
           echo "------------------------------------------------------------------------------------------------------------------"
-
           echo "------------------------------------------------------------------------------------------------------------------"
           k3d version
           docker ps
           kubectl describe po $CHART || true
           echo "------------------------------------------------------------------------------------------------------------------"
-
           for NS in $(kubectl get ns --no-headers -o custom-columns=:metadata.name); do
             echo "Namespace: ${NS}"
             echo "------------------------------------------------------------------------------------------------------------------"
