@@ -4,6 +4,11 @@ on:
       environment:
         required: true
         type: string
+      sync:
+        description: 'Helmfile sync'
+        required: true
+        type: boolean
+        default: false
 env:
   GHCR_ORG: ${{ vars.GHCR_ORG }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -80,11 +85,16 @@ jobs:
           until ping -c1 haproxy; do sleep 2; done
       - name: disable error notifications
         run: |
-          kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
-      - name: synchronize services
-        run: |
           echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
+          kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
+      - name: helmfile apply
+        if: ${{ inputs.sync == false }}
+        run: |
           helmfile apply --concurrency 4
+      - name: helmfile sync
+        if: ${{ inputs.sync == true }}
+        run: |
+          helmfile sync --concurrency 4
       - name: health check
         run: |
           just health
