@@ -132,7 +132,7 @@ jobs:
         if: ${{ contains(github.repository, 'dwh') }}
         working-directory: ./devops/helmfile
         run: |
-          sudo echo '127.0.0.1  apcrg.localhost' >> '/etc/hosts'
+          sudo echo '127.0.0.1 apcrg.localhost' | sudo tee -a /etc/hosts
           helmfile -e k3d -f ./helmfile-minimal.yaml -l name=kubernetes-replicator sync --skip-deps
 
           helmfile -f helmfile.yaml -e k3d repos
