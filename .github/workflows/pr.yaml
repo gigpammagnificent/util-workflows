@@ -39,10 +39,12 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - id: skipTest
-        uses: Legorooj/skip-ci@main
-        with:
-          pattern: '\[skip\stest\]'
-          token: ${{ env.GHCR_TOKEN }}
+        run:
+          echo "pass"
+      #   uses: Legorooj/skip-ci@v2
+      #   with:
+      #     pattern: '\[skip\stest\]'
+      #     token: ${{ env.GHCR_TOKEN }}
       - name: setup opa
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v2
