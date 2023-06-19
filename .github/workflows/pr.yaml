@@ -39,7 +39,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - id: skipTest
-        uses: Legorooj/skip-ci@main
+        uses: Legorooj/skip-ci@v2
         with:
           pattern: '\[skip\stest\]'
           token: ${{ env.GHCR_TOKEN }}
