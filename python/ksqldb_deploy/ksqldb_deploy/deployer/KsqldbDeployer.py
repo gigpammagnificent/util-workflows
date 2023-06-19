@@ -170,31 +170,49 @@ class KsqldbDeployer():
         self._scripts_metadata_loaded = True
 
     def determine_scripts_deployment_plan(self):
-        self._ensure_scripts_metadata_loaded()
+        print(F"    Determining scripts deployment plan...")
 
+        self._ensure_scripts_metadata_loaded()
+        print(F"        Metadata scripts loaded.")
+        
         self._drop_ksqldb_entities: List[KsqldbEntity] = []
         ksqldb_dropped_entity_names = set()
 
+        print(F"        Going through all deployment scripts...")
         while True:
             all_scripts_flagged_for_deletion = True
             for script in self.get_deployment_scripts():
+
+                print(F"            Processing script: {script.filename}...")
+                
                 for ksqldb_entity in script.ksqldb_entities:
+                
+                    print(F"                    Processing entity: {ksqldb_entity.name}...")
+                
                     if ksqldb_entity.name in ksqldb_dropped_entity_names:
+                        print(F"                    Entity skipped: {ksqldb_entity.name}.")
                         continue
 
                     all_dependencies_deleted = True
                     for dependent_entity_name in ksqldb_entity.dependencies:
+                        print(F"                        Processing dependent entity: {dependent_entity_name}...")
                         if dependent_entity_name in ksqldb_dropped_entity_names:
+                            print(F"                        Dependent entity skipped: {dependent_entity_name}.")
                             continue
 
                         all_dependencies_deleted = False
                         all_scripts_flagged_for_deletion = False
                         dependent_script = self.get_script_by_entity_name(dependent_entity_name)
                         dependent_script.deploy = True
-
+                        print(F"                        Dependent entity processed: {dependent_entity_name}.")
                     if all_dependencies_deleted:
+                        print(F"                    All dependencies deleted for entity: {ksqldb_entity.name}.")
                         self._drop_ksqldb_entities.append(ksqldb_entity)
-                        ksqldb_dropped_entity_names.add(ksqldb_entity.name)
+                        ksqldb_dropped_entity_names.add(ksqldb_entity.name)                        
+
+                    print(F"                    Entity processed: {ksqldb_entity.name}.")
+
+                print(F"            Script processed: {script.filename}.")
 
             if all_scripts_flagged_for_deletion:
                 break
