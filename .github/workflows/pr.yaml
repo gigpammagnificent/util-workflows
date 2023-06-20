@@ -39,10 +39,12 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - id: skipTest
-        uses: Legorooj/skip-ci@main
-        with:
-          pattern: '\[skip\stest\]'
-          token: ${{ env.GHCR_TOKEN }}
+        run:
+          echo "pass"
+      #   uses: Legorooj/skip-ci@v2
+      #   with:
+      #     pattern: '\[skip\stest\]'
+      #     token: ${{ env.GHCR_TOKEN }}
       - name: setup opa
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v2
@@ -110,10 +112,11 @@ jobs:
           version: v1.38.0
       - uses: rinx/setup-k3d@v0.0.4
         with:
+          version: v5.5.1
           skipClusterCreation: true
-      - uses: mamezou-tech/setup-helmfile@v1.0.0
+      - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
-          helmfile-version: "v0.146.0"
+          helmfile-version: "v0.153.1"
           install-kubectl: no
           install-helm: no
       - uses: actions/checkout@v3
@@ -131,8 +134,8 @@ jobs:
         if: ${{ contains(github.repository, 'dwh') }}
         working-directory: ./devops/helmfile
         run: |
-          helmfile -e k3d -f ./helmfile-minimal.yaml \
-            -l name=kubernetes-replicator sync --skip-deps
+          sudo echo '127.0.0.1 apcrg.localhost' | sudo tee -a /etc/hosts
+          helmfile -e k3d -f ./helmfile-minimal.yaml -l name=kubernetes-replicator sync --skip-deps
 
           helmfile -f helmfile.yaml -e k3d repos
           helmfile -f helmfile.yaml -e k3d -l name=ksqldb sync --skip-deps
@@ -151,13 +154,23 @@ jobs:
       - name: failure logs
         if: ${{ failure() }}
         run: |
+          CHART=$(basename `pwd`)
           echo "------------------------------------------------------------------------------------------------------------------"
           kubectl get all -n apicurio
           echo "------------------------------------------------------------------------------------------------------------------"
           kubectl logs -l app.kubernetes.io/name=apicurio-registry -n apicurio --tail=-1
           echo "------------------------------------------------------------------------------------------------------------------"
 
-          CHART=$(basename `pwd`)
+          echo "------------------------------------------------------------------------------------------------------------------"
+          kubectl get all
+          echo "------------------------------------------------------------------------------------------------------------------"
+
+          echo "------------------------------------------------------------------------------------------------------------------"
+          k3d version
+          docker ps
+          kubectl describe po $CHART || true
+          echo "------------------------------------------------------------------------------------------------------------------"
+
           for NS in $(kubectl get ns --no-headers -o custom-columns=:metadata.name); do
             echo "Namespace: ${NS}"
             echo "------------------------------------------------------------------------------------------------------------------"
@@ -165,6 +178,3 @@ jobs:
             echo "------------------------------------------------------------------------------------------------------------------"
             echo ""
           done
-          echo "------------------------------------------------------------------------------------------------------------------"
-          kubectl describe po $CHART || true
-          echo "------------------------------------------------------------------------------------------------------------------"

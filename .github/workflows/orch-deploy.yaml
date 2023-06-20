@@ -4,6 +4,11 @@ on:
       environment:
         required: true
         type: string
+      sync:
+        description: 'Helmfile sync'
+        required: false
+        type: boolean
+        default: false
 env:
   GHCR_ORG: ${{ vars.GHCR_ORG }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -40,12 +45,12 @@ jobs:
       - run: just test
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
-          helmfile-version: 'v0.149.0'
+          helmfile-version: 'v0.153.1'
           install-kubectl: no
           install-helm: no
       - name: setup aws cli
         if: ${{ startsWith(inputs.environment, 'eks-') }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -60,10 +65,15 @@ jobs:
           fi
       - name: disable error notifications
         run: |
-          kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
-      - name: synchronize services
-        run: |
           echo "DEPLOYMENT_BEGIN=$(($(date +%s%N)/1000000))" >> $GITHUB_ENV
+          kubectl patch daemonset fluent-bit -n telemetry -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}' || true
+      - name: helmfile apply
+        if: ${{ inputs.sync == false }}
+        run: |
+          helmfile apply --concurrency 4
+      - name: helmfile sync
+        if: ${{ inputs.sync == true }}
+        run: |
           helmfile sync --concurrency 4
       - name: health check
         run: |
@@ -87,7 +97,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         if: ${{ env.E2E == 'true' }}
         with:
-          workflow: E2E test
+          workflow: e2e.yaml
           repo: ${{ vars.GHCR_ORG }}/endeavour-e2e
           token: ${{ secrets.GHCR_TOKEN }}
           ref: main
