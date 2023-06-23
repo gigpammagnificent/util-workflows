@@ -37,12 +37,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
       - name: setop opa 0.53
         uses: open-policy-agent/setup-opa@v2
-        if: ${{ inputs.environment != 'eks-stage01' && inputs.environment != 'iv-prod01' }}
+        if: ${{ inputs.environment != 'iv-prod01' }}
         with:
           version: 0.53.1
       - name: setop opa 0.49
         uses: open-policy-agent/setup-opa@v2
-        if: ${{ inputs.environment == 'eks-stage01' || inputs.environment == 'iv-prod01' }}
+        if: ${{ inputs.environment == 'iv-prod01' }}
         with:
           version: 0.49.2
       - uses: jaxxstorm/action-install-gh-release@v1
