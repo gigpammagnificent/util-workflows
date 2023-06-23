@@ -49,7 +49,7 @@ jobs:
         if: ${{ steps.skipTest.outputs.canSkip != 'true' }}
         uses: open-policy-agent/setup-opa@v2
         with:
-          version: 0.49
+          version: 0.53
       - uses: jaxxstorm/action-install-gh-release@v1
         if: ${{ contains(github.repository, '-opa-') && steps.skipTest.outputs.canSkip != 'true' }}
         with:
