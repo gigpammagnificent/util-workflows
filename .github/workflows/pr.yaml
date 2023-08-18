@@ -107,9 +107,14 @@ jobs:
       - name: helm login
         run: |
           helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
-      - uses: volesen/setup-skaffold@v1.1
+      - uses: jaxxstorm/action-install-gh-release@v1
         with:
-          version: v1.38.0
+          repo: GoogleContainerTools/skaffold
+          tag: v1.38.0
+          cache: enable
+          extension-matching: disable
+          rename-to: skaffold
+          chmod: 0755
       - uses: rinx/setup-k3d@v0.0.4
         with:
           version: v5.5.1

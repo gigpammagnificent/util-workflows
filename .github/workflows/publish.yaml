@@ -32,9 +32,14 @@ jobs:
           registry: ghcr.io
           username: ${{ env.GHCR_USER }}
           password: ${{ env.GHCR_TOKEN }}
-      - uses: volesen/setup-skaffold@v1.1
+      - uses: jaxxstorm/action-install-gh-release@v1
         with:
-          version: 'v1.38.0'
+          repo: GoogleContainerTools/skaffold
+          tag: v1.38.0
+          cache: enable
+          extension-matching: disable
+          rename-to: skaffold
+          chmod: 0755
       # TODO create just receipe
       - name: publish
         run: |
