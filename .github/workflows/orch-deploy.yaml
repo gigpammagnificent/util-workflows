@@ -10,6 +10,7 @@ on:
         type: boolean
         default: false
 env:
+  GHCR_USER: ${{ vars.GHCR_USER }}
   GHCR_ORG: ${{ vars.GHCR_ORG }}
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   AWS_REGION: eu-west-1
