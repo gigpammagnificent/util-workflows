@@ -8,6 +8,7 @@ on:
         required: false
         type: string
 env:
+  GHCR_USER: ${{ vars.GHCR_USER }}
   GHCR_ORG: ${{ vars.GHCR_ORG }}
 jobs:
   update_job:
