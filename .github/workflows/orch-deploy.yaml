@@ -44,6 +44,9 @@ jobs:
         with:
           repo: shenwei356/rush
           tag: v0.5.0
+      - name: helm login
+        run: |
+          helm registry login ghcr.io -u ${{ env.GHCR_USER }} -p ${{ env.GHCR_TOKEN }}
       - run: just test
       - uses: mamezou-tech/setup-helmfile@v1.2.0
         with:
