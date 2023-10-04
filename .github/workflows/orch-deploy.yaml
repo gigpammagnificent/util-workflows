@@ -70,7 +70,7 @@ jobs:
         if: ${{ startsWith(inputs.environment, 'eks-') }}
         run: |
           if [ "${{ inputs.environment }}" == 'eks-dev' ]; then
-            aws eks update-kubeconfig --name ${{ inputs.environment }}
+            aws eks update-kubeconfig --name dev01
           else
             aws eks update-kubeconfig --name $(echo '${{ inputs.environment }}' | sed 's/eks\-//g')
           fi
